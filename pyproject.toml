@@ -18,7 +18,9 @@ authors = [
   { name = "David Angarita", email = "davidangarita.sistemas@gmail.com" },
 ]
 maintainers = [{ name = "Andrew Pikul", email = "ajpikul@gmail.com" }]
-dependencies = []
+dependencies = [
+    "docker>=7.1.0",
+]
 
 
 [tool.ruff.lint]
