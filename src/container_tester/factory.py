@@ -66,7 +66,7 @@ def _generate_file(df_name: str, os_name: str, commands: list[str]) -> None:
     print(f"'{df_name}' has been successfully generated.")
 
 
-def _build(image_tag: str, df_name: str):
+def _build(image_tag: str, df_name: str) -> None:
     start_time = time.time()
     client.images.build(
         path=".",
@@ -80,7 +80,7 @@ def _build(image_tag: str, df_name: str):
     print(f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m")
 
 
-def _run(image_tag: str):
+def _run(image_tag: str) -> None:
     try:
         output = client.containers.run(
             image_tag,
@@ -106,7 +106,7 @@ def _clean(
     df_name: str,
     *,
     remove_base: bool = False,
-):
+) -> None:
     client.images.remove(image=image_tag, force=True)
     if remove_base:
         client.images.remove(image=os_name, force=True)
