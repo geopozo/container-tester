@@ -24,6 +24,12 @@ dependencies = ["docker>=7.1.0"]
 [project.scripts]
 contest = "container_tester.factory:main"
 
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1",
+    "types-docker>=7.1.0.20241229",
+]
+
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -52,3 +58,6 @@ ignore = [
   "S101",   # allow assert
   "INP001", # no need for __init__ in test directories
 ]
+
+[tool.mypy]
+files = ["src/container_tester"]
