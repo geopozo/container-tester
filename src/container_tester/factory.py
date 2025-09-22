@@ -52,18 +52,21 @@ RUN {sync_cmd}
 def _generate_file(df_name: str, os_name: str, commands: list[str]) -> None:
     content = _dockerfile_content(os_name, commands)
     pathlib.Path(df_name).write_text(content)
-    print(f"'{df_name}' has been successfully generated.")
+    print(f"'{df_name}' generated.")
 
 
 def _build(image_tag: str, df_name: str) -> None:
     start_time = time.time()
-    client.images.build(
-        path=".",
-        dockerfile=df_name,
-        tag=image_tag,
-        rm=True,
-        forcerm=True,
-    )
+    try:
+        client.images.build(
+            path=".",
+            dockerfile=df_name,
+            tag=image_tag,
+            rm=True,
+            forcerm=True,
+        )
+    except BuildError as e:
+        print(e.build_log)
     secs = time.time() - start_time
     size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
     print(f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m")
@@ -82,9 +85,14 @@ def _run(image_tag: str) -> None:
         )
         print(output.decode("utf-8", errors="replace"))
     except ContainerError as e:
-        print(f"Container failed: {e.stderr}")
+        msg = (
+            e.stderr.decode("utf-8", errors="replace")
+            if isinstance(e.stderr, (bytes, bytearray))
+            else str(e.stderr)
+        )
+        print(f"Container failed:\n{msg}")
     except ImageNotFound as e:
-        print(f"Image not found: {e}")
+        print(f"Image not found: {e.explanation or e}")
     except Exception as e:  # noqa: BLE001
         print(f"Unexpected error: {e}")
 
