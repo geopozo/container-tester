@@ -22,13 +22,9 @@ except DockerException:
     sys.exit(1)
 
 
-def _dockerfile_content(
-    os_name: str,
-    commands: list[str],
-    *,
-    has_py: bool = False,
-    has_lock: bool = False,
-) -> str:
+def _dockerfile_content(os_name: str, commands: list[str]) -> str:
+    has_py = pathlib.Path("pyproject.toml").exists()
+    has_lock = pathlib.Path("uv.lock").exists()
     dependencies = []
     if has_py:
         dependencies.append("COPY pyproject.toml /app/pyproject.toml")
@@ -54,14 +50,7 @@ RUN {sync_cmd}
 
 
 def _generate_file(df_name: str, os_name: str, commands: list[str]) -> None:
-    has_py = pathlib.Path("pyproject.toml").exists()
-    has_lock = pathlib.Path("uv.lock").exists()
-    content = _dockerfile_content(
-        os_name,
-        commands,
-        has_py=has_py,
-        has_lock=has_lock,
-    )
+    content = _dockerfile_content(os_name, commands)
     pathlib.Path(df_name).write_text(content)
     print(f"'{df_name}' has been successfully generated.")
 
