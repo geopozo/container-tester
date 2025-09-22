@@ -100,15 +100,22 @@ def _run(image_tag: str) -> None:
 def _clean(
     os_name: str,
     image_tag: str,
-    df_name: str,
     *,
     remove_base: bool = False,
 ) -> None:
-    client.images.remove(image=image_tag, force=True)
+    try:
+        client.images.remove(image=image_tag, force=True)
+    except (ImageNotFound, DockerException):
+        pass
     if remove_base:
-        client.images.remove(image=os_name, force=True)
-    client.images.prune(filters={"dangling": True})
-    pathlib.Path(df_name).unlink(missing_ok=True)
+        try:
+            client.images.remove(image=os_name, force=True)
+        except (ImageNotFound, DockerException):
+            pass
+    try:
+        client.images.prune(filters={"dangling": True})
+    except DockerException:
+        pass
 
 
 def main() -> None:
@@ -125,6 +132,6 @@ def main() -> None:
             _run(image_tag)
         except (ImageNotFound, BuildError, Exception) as e:
             print(f"ERROR: {e}")
-            _clean(os_name, image_tag, df_name, remove_base=False)
+            _clean(os_name, image_tag)
         finally:
-            _clean(os_name, image_tag, df_name, remove_base=False)
+            _clean(os_name, image_tag)
