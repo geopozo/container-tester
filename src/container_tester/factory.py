@@ -29,10 +29,14 @@ def _generate_file(df_name: str, os_name: str, commands: list[str]) -> None:
         deps.append("COPY pyproject.toml /app/pyproject.toml")
     if has_lock:
         deps.append("COPY uv.lock /app/uv.lock")
-    content = f"""FROM {os_name}
+    content = f"""\
+FROM {os_name}
+
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
+
 {"\n".join(deps) if deps else ""}
+
 ENV UV_LINK_MODE=copy
 ADD . /app
 RUN uv sync --locked
@@ -90,18 +94,20 @@ def _clean(
     pathlib.Path(df_name).unlink(missing_ok=True)
 
 
-for cfg in config.cfg_list:
-    image_tag = cfg["name"]
-    os_name = cfg["os_name"]
-    commands = cfg["commands"]
-    df_name = f"Dockerfile.{image_tag}"
+def main() -> None:
+    """Initialize the program."""
+    for cfg in config.cfg_list:
+        image_tag = cfg["name"]
+        os_name = cfg["os_name"]
+        commands = cfg["commands"]
+        df_name = f"Dockerfile.{image_tag}"
 
-    try:
-        _generate_file(df_name, os_name, commands)
-        _build(image_tag, df_name)
-        _run(image_tag)
-    except (ImageNotFound, BuildError, Exception) as e:
-        print(f"ERROR: {e}")
-        _clean(os_name, image_tag, df_name, remove_base=True)
-    finally:
-        _clean(os_name, image_tag, df_name, remove_base=True)
+        try:
+            _generate_file(df_name, os_name, commands)
+            _build(image_tag, df_name)
+            _run(image_tag)
+        except (ImageNotFound, BuildError, Exception) as e:
+            print(f"ERROR: {e}")
+            _clean(os_name, image_tag, df_name, remove_base=True)
+        finally:
+            _clean(os_name, image_tag, df_name, remove_base=True)
