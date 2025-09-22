@@ -6,9 +6,10 @@ import pathlib
 import sys
 import time
 
-import config
 import docker
 from docker.errors import BuildError, ContainerError, DockerException, ImageNotFound
+
+from container_tester import config
 
 # ruff: noqa: T201 allow print in CLI
 
@@ -21,27 +22,46 @@ except DockerException:
     sys.exit(1)
 
 
-def _generate_file(df_name: str, os_name: str, commands: list[str]) -> None:
-    has_py = pathlib.Path("pyproject.toml").exists()
-    has_lock = pathlib.Path("uv.lock").exists()
-    deps = []
+def _dockerfile_content(
+    os_name: str,
+    commands: list[str],
+    *,
+    has_py: bool = False,
+    has_lock: bool = False,
+) -> str:
+    dependencies = []
     if has_py:
-        deps.append("COPY pyproject.toml /app/pyproject.toml")
+        dependencies.append("COPY pyproject.toml /app/pyproject.toml")
     if has_lock:
-        deps.append("COPY uv.lock /app/uv.lock")
-    content = f"""\
+        dependencies.append("COPY uv.lock /app/uv.lock")
+    deps = "\n".join(dependencies) if dependencies else "# no pyproject/lock detected"
+    cmds = "\n".join(f"RUN {cmd}" for cmd in commands) if commands else ""
+    sync_cmd = "uv sync --locked" if has_lock else "uv sync"
+    return f"""\
 FROM {os_name}
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 
-{"\n".join(deps) if deps else ""}
+{deps}
 
 ENV UV_LINK_MODE=copy
 ADD . /app
-RUN uv sync --locked
-{"\n".join(f"RUN {cmd}" for cmd in commands) if commands else ""}
+
+RUN {sync_cmd}
+{cmds}
 """
+
+
+def _generate_file(df_name: str, os_name: str, commands: list[str]) -> None:
+    has_py = pathlib.Path("pyproject.toml").exists()
+    has_lock = pathlib.Path("uv.lock").exists()
+    content = _dockerfile_content(
+        os_name,
+        commands,
+        has_py=has_py,
+        has_lock=has_lock,
+    )
     pathlib.Path(df_name).write_text(content)
     print(f"'{df_name}' has been successfully generated.")
 
@@ -64,7 +84,7 @@ def _run(image_tag: str):
     try:
         output = client.containers.run(
             image_tag,
-            command=["uv", "run", "_docker/script.py"],
+            command=["echo", "Hello"],
             name="choreo_base",
             tty=True,
             remove=True,
@@ -108,6 +128,6 @@ def main() -> None:
             _run(image_tag)
         except (ImageNotFound, BuildError, Exception) as e:
             print(f"ERROR: {e}")
-            _clean(os_name, image_tag, df_name, remove_base=True)
+            _clean(os_name, image_tag, df_name, remove_base=False)
         finally:
-            _clean(os_name, image_tag, df_name, remove_base=True)
+            _clean(os_name, image_tag, df_name, remove_base=False)
