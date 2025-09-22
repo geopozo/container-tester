@@ -85,12 +85,7 @@ def _run(image_tag: str) -> None:
         )
         print(output.decode("utf-8", errors="replace"))
     except ContainerError as e:
-        msg = (
-            e.stderr.decode("utf-8", errors="replace")
-            if isinstance(e.stderr, (bytes, bytearray))
-            else str(e.stderr)
-        )
-        print(f"Container failed:\n{msg}")
+        print(f"Container failed:\n{e.stderr}")
     except ImageNotFound as e:
         print(f"Image not found: {e.explanation or e}")
     except Exception as e:  # noqa: BLE001
