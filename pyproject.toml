@@ -22,7 +22,7 @@ maintainers = [{ name = "Andrew Pikul", email = "ajpikul@gmail.com" }]
 dependencies = ["docker>=7.1.0"]
 
 [project.scripts]
-container-test = "container_tester.factory:main"
+contest = "container_tester.factory:main"
 
 
 [tool.ruff.lint]
