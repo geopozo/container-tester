@@ -7,6 +7,7 @@ import pathlib
 import sys
 import time
 
+import click
 import docker
 from docker.errors import BuildError, ContainerError, DockerException, ImageNotFound
 
@@ -58,17 +59,22 @@ def _generate_file(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
     content = _dockerfile_content(config["os_name"], config["commands"])
 
     (dir_path / df_name).write_text(content)
-    logger.info(f"'{df_name}' generated.")
+    click.echo(f"'{df_name}' generated.")
 
 
-def _build(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
+def _build(
+    config: config.DockerConfig,
+    dir_path: pathlib.Path,
+    *,
+    clean: bool = False,
+) -> None:
     image_tag = config["name"]
     df_name = f"Dockerfile.{image_tag}"
     start_time = time.time()
 
     try:
         client.images.build(
-            path=str(dir_path),
+            path=f"{dir_path}",
             dockerfile=df_name,
             tag=image_tag,
             rm=True,
@@ -76,6 +82,10 @@ def _build(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
         )
     except BuildError as e:
         print(e.build_log)
+    finally:
+        if clean:
+            (dir_path / df_name).unlink(missing_ok=True)
+
     secs = time.time() - start_time
     size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
     logger.info(
@@ -83,11 +93,18 @@ def _build(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
     )
 
 
-def _run(image_tag: str) -> None:
+def _run(
+    config: config.DockerConfig,
+    command: str,
+    *,
+    clean: bool = False,
+) -> None:
+    image_tag = config["name"]
+
     try:
         output = client.containers.run(
             image_tag,
-            command=["echo", "Hello"],
+            command=command,
             name="choreo_base",
             tty=True,
             remove=True,
@@ -101,6 +118,9 @@ def _run(image_tag: str) -> None:
         print(f"Image not found: {e.explanation or e}")
     except Exception as e:  # noqa: BLE001
         print(f"Unexpected error: {e}")
+    finally:
+        if clean:
+            _remove_image(image_tag)
 
 
 def _clean_dangling() -> None:
@@ -117,23 +137,37 @@ def _remove_image(image_tag: str):
         pass
 
 
-def main() -> None:
+@click.command()
+@click.option(
+    "--path",
+    default=".",
+    help="Directory to create or retrieve Dockerfiles (defaults to current directory)",
+)
+@click.option(
+    "--command",
+    default="echo 'Container is running'",
+    type=str,
+    help="Shell command to execute inside the container.",
+)
+@click.option(
+    "--clean/--no-clean",
+    default=True,
+    is_flag=True,
+    help="Enable cleanup after execution (use --no-clean to disable)",
+)
+def main(path: str, command, *, clean: bool) -> None:
     """Initialize the program."""
-    dir_path = _utils.resolve_dir_path("")
-    remove_base = False
+    if not command.strip():
+        raise click.BadParameter("Command cannot be empty.")
 
-    for cfg in config.cfg_list:
-        image_tag = cfg["name"]
-        os_name = cfg["os_name"]
+    dir_path = _utils.resolve_dir_path(path, mkdir=True)
 
-        try:
+    try:
+        for cfg in config.cfg_list:
             _generate_file(cfg, dir_path)
-            _build(cfg, dir_path)
-            _run(image_tag)
-        except (ImageNotFound, BuildError, Exception) as e:
-            print(f"ERROR: {e}")
-        finally:
-            _clean_dangling()
-            _remove_image(image_tag)
-            if remove_base:
-                _remove_image(os_name)
+            _build(cfg, dir_path, clean=clean)
+            _run(cfg, command, clean=clean)
+    except (ImageNotFound, BuildError, Exception) as e:
+        print(f"ERROR: {e}")
+    finally:
+        _clean_dangling()
