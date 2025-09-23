@@ -10,7 +10,7 @@ import time
 import docker
 from docker.errors import BuildError, ContainerError, DockerException, ImageNotFound
 
-from container_tester import config
+from container_tester import _utils, config
 
 # ruff: noqa: T201 allow print in CLI
 
@@ -53,17 +53,22 @@ RUN {sync_cmd}
 """
 
 
-def _generate_file(df_name: str, os_name: str, commands: list[str]) -> None:
-    content = _dockerfile_content(os_name, commands)
-    pathlib.Path(df_name).write_text(content)
-    print(f"'{df_name}' generated.")
+def _generate_file(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
+    df_name = f"Dockerfile.{config['name']}"
+    content = _dockerfile_content(config["os_name"], config["commands"])
+
+    (dir_path / df_name).write_text(content)
+    logger.info(f"'{df_name}' generated.")
 
 
-def _build(image_tag: str, df_name: str) -> None:
+def _build(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
+    image_tag = config["name"]
+    df_name = f"Dockerfile.{image_tag}"
     start_time = time.time()
+
     try:
         client.images.build(
-            path=".",
+            path=str(dir_path),
             dockerfile=df_name,
             tag=image_tag,
             rm=True,
@@ -114,17 +119,21 @@ def _remove_image(image_tag: str):
 
 def main() -> None:
     """Initialize the program."""
+    dir_path = _utils.resolve_dir_path("")
+    remove_base = False
+
     for cfg in config.cfg_list:
         image_tag = cfg["name"]
         os_name = cfg["os_name"]
-        commands = cfg["commands"]
-        df_name = f"Dockerfile.{image_tag}"
 
         try:
-            _generate_file(df_name, os_name, commands)
-            _build(image_tag, df_name)
+            _generate_file(cfg, dir_path)
+            _build(cfg, dir_path)
             _run(image_tag)
         except (ImageNotFound, BuildError, Exception) as e:
             print(f"ERROR: {e}")
         finally:
             _clean_dangling()
+            _remove_image(image_tag)
+            if remove_base:
+                _remove_image(os_name)
