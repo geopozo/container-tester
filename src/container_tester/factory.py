@@ -93,7 +93,7 @@ def _build(
 
     secs = time.time() - start_time
     size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
-    logger.info(
+    click.echo(
         f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m",
     )
 
@@ -102,7 +102,7 @@ def _run(
     config: config.DockerConfig,
     command: str,
     *,
-    clean: bool = False,
+    clean: bool = True,
 ) -> None:
     image_tag = config["name"]
 
@@ -142,7 +142,7 @@ def _remove_image(image_tag: str):
         pass
 
 
-@click.command()
+@cli.command()
 @click.option(
     "--path",
     default=".",
@@ -160,8 +160,8 @@ def _remove_image(image_tag: str):
     is_flag=True,
     help="Enable cleanup after execution (use --no-clean to disable)",
 )
-def main(path: str, command, *, clean: bool) -> None:
-    """Initialize the program."""
+def default_config(path: str, command, *, clean: bool) -> None:
+    """Execute default config file."""
     if not command.strip():
         raise click.BadParameter("Command cannot be empty.")
 
