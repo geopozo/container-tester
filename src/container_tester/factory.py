@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import pathlib
 import sys
 import time
@@ -13,12 +14,15 @@ from container_tester import config
 
 # ruff: noqa: T201 allow print in CLI
 
+logger = logging.getLogger(__name__)
 
 try:
     client = docker.from_env()
     client.ping()
 except DockerException:
-    print("Docker is not running. Please start the Docker daemon and try again.")
+    logger.warning(
+        "Docker is not running. Please start the Docker daemon and try again.",
+    )
     sys.exit(1)
 
 
@@ -69,7 +73,9 @@ def _build(image_tag: str, df_name: str) -> None:
         print(e.build_log)
     secs = time.time() - start_time
     size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
-    print(f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m")
+    logger.info(
+        f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m",
+    )
 
 
 def _run(image_tag: str) -> None:
