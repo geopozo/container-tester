@@ -125,7 +125,7 @@ def _run(
         print(f"Unexpected error: {e}")
     finally:
         if clean:
-            _remove_image(image_tag)
+            remove_image(image_tag)
 
 
 def _clean_dangling() -> None:
@@ -135,11 +135,27 @@ def _clean_dangling() -> None:
         pass
 
 
-def _remove_image(image_tag: str):
+@cli.command()
+@click.option(
+    "--image",
+    help="Tag or ID of the Docker image to remove (e.g., 'myapp:latest').",
+    required=True,
+)
+def remove_image(image: str) -> None:
+    """
+    Tag or ID of the Docker image to remove (e.g., 'myapp:latest').
+
+    Args:
+        image (str): The tag or ID of the Docker image to remove.
+
+    """
     try:
-        client.images.remove(image=image_tag, force=True)
-    except (ImageNotFound, DockerException):
-        pass
+        client.images.remove(image=image, force=True)
+        click.secho(f"Image '{image}' removed.", fg="green")
+    except ImageNotFound:
+        click.secho(f"Image '{image}' not found.", fg="yellow")
+    except DockerException as e:
+        click.secho(f"Docker error: {e}", fg="red")
 
 
 @cli.command()
