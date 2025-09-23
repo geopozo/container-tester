@@ -98,24 +98,17 @@ def _run(image_tag: str) -> None:
         print(f"Unexpected error: {e}")
 
 
-def _clean(
-    os_name: str,
-    image_tag: str,
-    *,
-    remove_base: bool = False,
-) -> None:
-    try:
-        client.images.remove(image=image_tag, force=True)
-    except (ImageNotFound, DockerException):
-        pass
-    if remove_base:
-        try:
-            client.images.remove(image=os_name, force=True)
-        except (ImageNotFound, DockerException):
-            pass
+def _clean_dangling() -> None:
     try:
         client.images.prune(filters={"dangling": True})
     except DockerException:
+        pass
+
+
+def _remove_image(image_tag: str):
+    try:
+        client.images.remove(image=image_tag, force=True)
+    except (ImageNotFound, DockerException):
         pass
 
 
@@ -133,6 +126,5 @@ def main() -> None:
             _run(image_tag)
         except (ImageNotFound, BuildError, Exception) as e:
             print(f"ERROR: {e}")
-            _clean(os_name, image_tag)
         finally:
-            _clean(os_name, image_tag)
+            _clean_dangling()
