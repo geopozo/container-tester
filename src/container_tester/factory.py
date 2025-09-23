@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 try:
     client = docker.from_env()
-    client.ping()
 except DockerException:
     logger.warning(
         "Docker is not running. Please start the Docker daemon and try again.",
@@ -29,7 +28,7 @@ except DockerException:
 
 
 @click.group(help=("CLI for testing containers."))
-def cli():
+def cli() -> None:
     """CLI for test containers."""
 
 
@@ -239,7 +238,7 @@ def remove_image(image: str) -> None:
     is_flag=True,
     help="Enable cleanup after execution (use --no-clean to disable)",
 )
-def default_config(path: str, command, *, clean: bool) -> None:
+def default_config(path: str, command: str, *, clean: bool) -> None:
     """Execute default config file."""
     if not command.strip():
         raise click.BadParameter("Command cannot be empty.")
