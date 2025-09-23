@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [project.scripts]
-contest = "container_tester.factory:main"
+contest = "container_tester.factory:cli"
 
 [dependency-groups]
 dev = [

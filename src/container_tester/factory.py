@@ -27,6 +27,11 @@ except DockerException:
     sys.exit(1)
 
 
+@click.group(help=("CLI for testing containers."))
+def cli():
+    """CLI for test containers."""
+
+
 def _dockerfile_content(os_name: str, commands: list[str]) -> str:
     has_py = pathlib.Path("pyproject.toml").exists()
     has_lock = pathlib.Path("uv.lock").exists()
@@ -66,7 +71,7 @@ def _build(
     config: config.DockerConfig,
     dir_path: pathlib.Path,
     *,
-    clean: bool = False,
+    clean: bool = True,
 ) -> None:
     image_tag = config["name"]
     df_name = f"Dockerfile.{image_tag}"
