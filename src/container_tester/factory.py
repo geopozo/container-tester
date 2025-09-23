@@ -61,16 +61,8 @@ RUN {sync_cmd}
 
 
 @cli.command()
-@click.option(
-    "--os-name",
-    default="",
-    help="Base Docker image to initialize from",
-)
-@click.option(
-    "--name",
-    default="",
-    help="Name for the generated Dockerfile",
-)
+@click.option("--os-name", default="", help="Base Docker image to initialize from")
+@click.option("--name", default="", help="Name for the generated Dockerfile")
 @click.option(
     "--path",
     default=".",
@@ -153,13 +145,33 @@ def build(name: str, path: str, *, clean: bool) -> None:
             (dir_path / df_name).unlink(missing_ok=True)
 
 
-def _run(
-    config: config.DockerConfig,
+@cli.command()
+@click.option("--name", default="", help="Tag name for the Docker image (required)")
+@click.option(
+    "--command",
+    default="echo 'Container is running'",
+    type=str,
+    help="Shell command to execute inside the container.",
+)
+@click.option(
+    "--clean/--no-clean",
+    default=False,
+    is_flag=True,
+    help="Delete Docker image after build (use --clean to enable)",
+)
+def run(
+    name: str,
     command: str,
     *,
     clean: bool = True,
 ) -> None:
-    image_tag = config["name"]
+    """Something."""
+    if not name.strip():
+        raise click.BadParameter("The '--name' option cannot be empty.")
+    if not command.strip():
+        raise click.BadParameter("The '--command' option cannot be empty.")
+
+    image_tag = name
 
     try:
         output = client.containers.run(
@@ -171,14 +183,10 @@ def _run(
             stdout=True,
             stderr=True,
         )
-        print(output.decode("utf-8", errors="replace"))
-    except ContainerError as e:
-        print(f"Container failed:\n{e.stderr}")
-    except ImageNotFound as e:
-        print(f"Image not found: {e.explanation or e}")
-    except Exception as e:  # noqa: BLE001
-        print(f"Unexpected error: {e}")
-    finally:
+    except (ContainerError, ImageNotFound, Exception) as e:
+        click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
+    else:
+        click.echo(output.decode("utf-8", errors="replace"))
         if clean:
             remove_image(image_tag)
 
@@ -243,7 +251,7 @@ def default_config(path: str, command, *, clean: bool) -> None:
 
             generate_file(os_name, name, path)
             build(name, path, clean=clean)
-            _run(cfg, command, clean=clean)
+            run(name, command, clean=clean)
     except (ImageNotFound, BuildError, Exception) as e:
         print(f"ERROR: {e}")
     finally:
