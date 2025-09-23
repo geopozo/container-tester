@@ -88,7 +88,8 @@ def generate_file(os_name: str, name: str, path: str) -> None:
 
     """
     if not os_name.strip():
-        raise click.BadParameter("'os-name' cannot be empty.")
+        raise click.BadParameter("The '--os-name' option cannot be empty.")
+
     if not name:
         name = re.sub(r"[^a-zA-Z0-9]", "", os_name)
 
@@ -100,13 +101,33 @@ def generate_file(os_name: str, name: str, path: str) -> None:
     click.echo(f"'{df_name}' generated.")
 
 
-def _build(
-    config: config.DockerConfig,
-    path: str,
-    *,
-    clean: bool = True,
-) -> None:
-    image_tag = config["name"]
+@cli.command()
+@click.option("--name", default="", help="Tag name for the Docker image (required)")
+@click.option(
+    "--path",
+    default=".",
+    help="Directory containing the Dockerfile (default: current)",
+)
+@click.option(
+    "--clean/--no-clean",
+    default=False,
+    is_flag=True,
+    help="Delete Dockerfile after build (use --clean to enable)",
+)
+def build(name: str, path: str, *, clean: bool) -> None:
+    """
+    Build a Docker image from a tagged Dockerfile.
+
+    Args:
+        name (str): Tag name for the Docker image. Required.
+        path (str): Directory containing the Dockerfile. Defaults to current directory.
+        clean (bool): Whether to delete the Dockerfile after build. Enabled by default.
+
+    """
+    if not name.strip():
+        raise click.BadParameter("The '--name' option cannot be empty.")
+
+    image_tag = name
     df_name = f"Dockerfile.{image_tag}"
     start_time = time.time()
     dir_path = _utils.resolve_dir_path(path)
@@ -119,17 +140,17 @@ def _build(
             rm=True,
             forcerm=True,
         )
+
     except BuildError as e:
-        print(e.build_log)
-    finally:
+        click.secho(e.msg, fg="red")
+    else:
+        secs = time.time() - start_time
+        size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
+        click.echo(
+            f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m",
+        )
         if clean:
             (dir_path / df_name).unlink(missing_ok=True)
-
-    secs = time.time() - start_time
-    size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
-    click.echo(
-        f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m",
-    )
 
 
 def _run(
@@ -221,7 +242,7 @@ def default_config(path: str, command, *, clean: bool) -> None:
             name = cfg["name"]
 
             generate_file(os_name, name, path)
-            _build(cfg, path, clean=clean)
+            build(name, path, clean=clean)
             _run(cfg, command, clean=clean)
     except (ImageNotFound, BuildError, Exception) as e:
         print(f"ERROR: {e}")
