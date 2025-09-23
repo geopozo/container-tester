@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
+import re
 import sys
 import time
 
@@ -59,9 +60,41 @@ RUN {sync_cmd}
 """
 
 
-def _generate_file(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
-    df_name = f"Dockerfile.{config['name']}"
-    content = _dockerfile_content(config["os_name"], config["commands"])
+@cli.command()
+@click.option(
+    "--os-name",
+    default="",
+    help="Base Docker image to initialize from",
+)
+@click.option(
+    "--name",
+    default="",
+    help="Name for the generated Dockerfile",
+)
+@click.option(
+    "--path",
+    default=".",
+    help="Target directory for Dockerfile (default: current)",
+)
+def generate_file(os_name: str, name: str, path: str) -> None:
+    """
+    Generate a Dockerfile based on a given base image.
+
+    Args:
+        os_name (str): Base Docker image to initialize from (e.g., 'ubuntu:20.04').
+        name (str): Custom name for the Dockerfile. If empty, derived from os_name.
+        path (str): Directory to create or retrieve Dockerfiles. Defaults to current
+            directory.
+
+    """
+    if not os_name.strip():
+        raise click.BadParameter("'os-name' cannot be empty.")
+    if not name:
+        name = re.sub(r"[^a-zA-Z0-9]", "", os_name)
+
+    dir_path = _utils.resolve_dir_path(path, mkdir=True)
+    df_name = f"Dockerfile.{name}"
+    content = _dockerfile_content(os_name, [])  # por ahora no commands
 
     (dir_path / df_name).write_text(content)
     click.echo(f"'{df_name}' generated.")
@@ -69,13 +102,14 @@ def _generate_file(config: config.DockerConfig, dir_path: pathlib.Path) -> None:
 
 def _build(
     config: config.DockerConfig,
-    dir_path: pathlib.Path,
+    path: str,
     *,
     clean: bool = True,
 ) -> None:
     image_tag = config["name"]
     df_name = f"Dockerfile.{image_tag}"
     start_time = time.time()
+    dir_path = _utils.resolve_dir_path(path)
 
     try:
         client.images.build(
@@ -181,12 +215,13 @@ def default_config(path: str, command, *, clean: bool) -> None:
     if not command.strip():
         raise click.BadParameter("Command cannot be empty.")
 
-    dir_path = _utils.resolve_dir_path(path, mkdir=True)
-
     try:
         for cfg in config.cfg_list:
-            _generate_file(cfg, dir_path)
-            _build(cfg, dir_path, clean=clean)
+            os_name = cfg["os_name"]
+            name = cfg["name"]
+
+            generate_file(os_name, name, path)
+            _build(cfg, path, clean=clean)
             _run(cfg, command, clean=clean)
     except (ImageNotFound, BuildError, Exception) as e:
         print(f"ERROR: {e}")
