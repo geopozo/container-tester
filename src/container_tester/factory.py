@@ -100,23 +100,18 @@ def _remove_dockerfile(image_tag: str, path: str) -> None:
 
 
 @cli.command()
-@click.option("--os-name", default="", help="Base Docker image to initialize from")
+@click.argument("os-name")
 @click.option("--name", default="", help="Name for the generated Dockerfile")
 @click.option(
     "--path",
     default=".",
-    help="Target directory for Dockerfile (default: current)",
+    help="Directory to create or retrieve Dockerfiles. (default: current)",
 )
 def generate_file(os_name: str, name: str, path: str) -> None:
     """
     Generate a Dockerfile based on a given base image.
 
-    Args:
-        os_name (str): Base Docker image to initialize from (e.g., 'ubuntu:20.04').
-        name (str): Custom name for the Dockerfile. If empty, derived from os_name.
-        path (str): Directory to create or retrieve Dockerfiles. Defaults to current
-            directory.
-
+    OS_NAME base Docker image to initialize from (e.g., 'ubuntu:20.04')
     """
     if not os_name.strip():
         raise click.BadParameter("The '--os-name' option cannot be empty.")
