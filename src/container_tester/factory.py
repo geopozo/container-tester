@@ -59,6 +59,46 @@ RUN {sync_cmd}
 """
 
 
+def _remove_dangling() -> None:
+    try:
+        client.images.prune(filters={"dangling": True})
+    except DockerException:
+        pass
+
+
+def _remove_image(image_tag: str) -> None:
+    try:
+        click.echo(f"Removing image '{image_tag}'...")
+        client.images.remove(image=image_tag, force=True)
+        click.secho(f"Image '{image_tag}' removed.", fg="green")
+    except ImageNotFound:
+        click.secho(f"Image '{image_tag}' not found.", fg="yellow")
+    except DockerException as e:
+        click.secho(f"Docker error: {e}", fg="red")
+
+
+def _remove_container(image_tag: str) -> None:
+    try:
+        click.echo(f"Removing '{image_tag}' container...")
+        # Falta implementar esta logica
+    except DockerException as e:
+        click.secho(f"Docker error: {e}", fg="red")
+
+
+def _remove_dockerfile(image_tag: str, path: str) -> None:
+    try:
+        dir_path = _utils.resolve_dir_path(path)
+        df_name = f"Dockerfile.{image_tag}"
+        df_path = dir_path / df_name
+        df_path.unlink(missing_ok=True)
+    except DockerException as e:
+        click.echo(f"Failed to remove '{df_name}': {e}")
+    except (Exception, TypeError) as e:
+        click.secho(f"{e}", fg="red")
+    else:
+        click.echo(f"Dockerfile '{df_name}' removed.")
+
+
 @cli.command()
 @click.option("--os-name", default="", help="Base Docker image to initialize from")
 @click.option("--name", default="", help="Name for the generated Dockerfile")
@@ -254,4 +294,4 @@ def default_config(path: str, command: str, *, clean: bool) -> None:
     except (ImageNotFound, BuildError, Exception) as e:
         print(f"ERROR: {e}")
     finally:
-        _clean_dangling()
+        _remove_dangling()
