@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import pathlib
-import re
 import sys
 import time
 
@@ -31,11 +30,6 @@ def docker_client() -> docker.DockerClient:
         sys.exit(1)
     else:
         return client
-
-
-@click.group(help=("CLI for testing containers."))
-def cli() -> None:
-    """CLI for test containers."""
 
 
 def _dockerfile_content(os_name: str, commands: list[str]) -> str:
@@ -65,7 +59,63 @@ RUN {sync_cmd}
 """
 
 
-def _remove_dangling() -> None:
+def remove_image(image_tag: str) -> None:
+    """
+    Remove a Docker image by image-tag, showing status messages.
+
+    Args:
+        image_tag (str): Tag of the image to remove.
+
+    """
+    client = docker_client()
+
+    try:
+        client.images.remove(image=image_tag, force=True)
+        click.secho(f"Image '\033[93m{image_tag}s\033[0m' removed.")
+    except ImageNotFound:
+        click.secho(f"Image '{image_tag}' not found.", fg="yellow", file=sys.stderr)
+    except DockerException as e:
+        click.secho(f"Docker error: {e}", fg="red", file=sys.stderr)
+
+
+def remove_container(image_tag: str) -> None:
+    """
+    Remove a Docker container by image-tag.
+
+    Args:
+        image_tag (str): Tag of the image to remove.
+
+    """
+    try:
+        click.echo(f"Removing '\033[93m{image_tag}s\033[0m' container...")
+        # Falta implementar esta logica
+    except DockerException as e:
+        click.secho(f"Docker error: {e}", fg="red", file=sys.stderr)
+
+
+def remove_dockerfile(image_tag: str, path: str = ".") -> None:
+    """
+    Remove a Dockerfile matching the image tag from the given path.
+
+    Args:
+        image_tag (str): Tag used to identify the Dockerfile.
+        path (str): Directory to search for the Dockerfile.
+            Defaults to current directory.
+
+    """
+    try:
+        dir_path = _utils.resolve_dir_path(path)
+        df_name = f"Dockerfile.{image_tag}"
+        (dir_path / df_name).unlink(missing_ok=True)
+        click.secho(f"Dockerfile '\033[93m{df_name}s\033[0m' removed.")
+    except DockerException as e:
+        click.secho(f"Failed to remove '{df_name}': {e}", fg="red", file=sys.stderr)
+    except (Exception, TypeError) as e:
+        click.secho(f"{e}", fg="red", file=sys.stderr)
+
+
+def remove_dangling() -> None:
+    """Remove dangling Docker images to free up space."""
     client = docker_client()
 
     try:
@@ -74,93 +124,39 @@ def _remove_dangling() -> None:
         pass
 
 
-def _remove_image(image_tag: str) -> None:
-    client = docker_client()
-
-    try:
-        click.echo(f"Removing image '{image_tag}'...")
-        client.images.remove(image=image_tag, force=True)
-        click.secho(f"Image '{image_tag}' removed.", fg="green")
-    except ImageNotFound:
-        click.secho(f"Image '{image_tag}' not found.", fg="yellow")
-    except DockerException as e:
-        click.secho(f"Docker error: {e}", fg="red")
-
-
-def _remove_container(image_tag: str) -> None:
-    try:
-        click.echo(f"Removing '{image_tag}' container...")
-        # Falta implementar esta logica
-    except DockerException as e:
-        click.secho(f"Docker error: {e}", fg="red")
-
-
-def _remove_dockerfile(image_tag: str, path: str) -> None:
-    try:
-        dir_path = _utils.resolve_dir_path(path)
-        df_name = f"Dockerfile.{image_tag}"
-        df_path = dir_path / df_name
-        df_path.unlink(missing_ok=True)
-    except DockerException as e:
-        click.echo(f"Failed to remove '{df_name}': {e}")
-    except (Exception, TypeError) as e:
-        click.secho(f"{e}", fg="red")
-    else:
-        click.echo(f"Dockerfile '{df_name}' removed.")
-
-
-@cli.command()
-@click.argument("os-name")
-@click.option("--name", default="", help="Name for the generated Dockerfile")
-@click.option(
-    "--path",
-    default=".",
-    help="Directory to create or retrieve Dockerfiles. (default: current)",
-)
 def generate_file(os_name: str, name: str, path: str) -> None:
     """
-    Generate a Dockerfile based on a given base image.
+    Generate a Dockerfile for the given OS and name at the specified path.
 
-    OS_NAME base Docker image to initialize from (e.g., 'ubuntu:20.04')
+    Args:
+        os_name (str): Base OS for the Dockerfile.
+        name (str): Identifier used in the Dockerfile name.
+        path (str): Directory to save the Dockerfile.
+
     """
-    if not os_name.strip():
-        raise click.BadParameter("The '--os-name' option cannot be empty.")
+    try:
+        dir_path = _utils.resolve_dir_path(path, mkdir=True)
+        df_name = f"Dockerfile.{name}"
+        content = _dockerfile_content(os_name, [])  # por ahora no commands
 
-    if not name:
-        name = re.sub(r"[^a-zA-Z0-9]", "", os_name)
-
-    dir_path = _utils.resolve_dir_path(path, mkdir=True)
-    df_name = f"Dockerfile.{name}"
-    content = _dockerfile_content(os_name, [])  # por ahora no commands
-
-    (dir_path / df_name).write_text(content)
-    click.echo(f"'{df_name}' generated.")
+        (dir_path / df_name).write_text(content)
+        click.echo(f"\n'\033[93m{df_name}s\033[0m' generated.")
+    except (OSError, TypeError, ValueError) as e:
+        click.secho(f"Failed to generate Dockerfile: {e}", fg="red", file=sys.stderr)
 
 
-@cli.command()
-@click.argument("name")
-@click.option(
-    "--path",
-    default=".",
-    help="Directory containing the Dockerfile (default: current)",
-)
-@click.option(
-    "--clean/--no-clean",
-    default=False,
-    is_flag=True,
-    help="Delete Docker image after build (use --clean to enable)",
-)
-def build(name: str, path: str, *, clean: bool = False) -> None:
+def build_image(image_tag: str, path: str, *, clean: bool = False) -> None:
     """
-    Build a Docker image from a tagged Dockerfile.
+    Build a Docker image from a tagged Dockerfile and optionally remove it after build.
 
-    NAME for the Docker image. Required.
+    Args:
+        image_tag (str): Tag for the resulting Docker image.
+        path (str): Directory containing the Dockerfile.
+        clean (bool, optional): If True, remove the image after building.
+            Defaults to False.
+
     """
-    if not name.strip():
-        raise click.BadParameter("The '--name' option cannot be empty.")
-
     client = docker_client()
-    image_tag = name
     df_name = f"Dockerfile.{image_tag}"
     start_time = time.time()
 
@@ -175,9 +171,9 @@ def build(name: str, path: str, *, clean: bool = False) -> None:
         )
 
     except BuildError as e:
-        click.secho(e.msg, fg="red")
+        click.secho(e.msg, fg="red", file=sys.stderr)
     except (Exception, TypeError) as e:
-        click.secho(f"{e}", fg="red")
+        click.secho(f"{e}", fg="red", file=sys.stderr)
     else:
         secs = time.time() - start_time
         size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
@@ -185,109 +181,54 @@ def build(name: str, path: str, *, clean: bool = False) -> None:
             f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m",
         )
         if clean:
-            _remove_image(image_tag)
+            remove_image(image_tag)
 
 
-@cli.command()
-@click.argument("name")
-@click.option(
-    "--command",
-    default="echo 'Container is running'",
-    type=str,
-    help="Shell command to execute inside the container.",
-)
-@click.option(
-    "--clean/--no-clean",
-    default=False,
-    is_flag=True,
-    help="Delete Docker container after run (use --clean to enable)",
-)
-def run(name: str, command: str, *, clean: bool = False) -> None:
+def run_container(image_tag: str, command: str, *, clean: bool = False) -> None:
     """
-    Run a Docker container from a tagged docker image.
+    Run a container from a Docker image with the given command.
 
-    NAME for the Docker image. Required.
+    Args:
+        image_tag (str): Tag of the image to run.
+        command (str): Command to execute inside the container.
+        clean (bool, optional): If True, remove the container after execution.
+            Defaults to False.
+
     """
-    if not name.strip():
-        raise click.BadParameter("The '--name' option cannot be empty.")
-
-    if not command.strip():
-        raise click.BadParameter("The '--command' option cannot be empty.")
-
-    image_tag = name
     client = docker_client()
 
     try:
         output = client.containers.run(
             image_tag,
-            command=command,
+            command=command or 'echo "Container is running"',
             name="choreo_base",
             tty=True,
             remove=clean,
             stdout=True,
             stderr=True,
         )
+        click.echo(output.decode("utf-8", errors="replace"))
     except (ContainerError, ImageNotFound, Exception) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
-    else:
-        click.echo(output.decode("utf-8", errors="replace"))
 
 
-@cli.command()
-@click.argument(
-    "option",
-    type=click.Choice(["container", "dockerfile", "image"], case_sensitive=False),
-)
-@click.option("--name", help="Name of the resource to remove (image or Dockerfile)")
-@click.option(
-    "--path",
-    default=".",
-    help="Directory to create or retrieve Dockerfiles (defaults to current directory)",
-)
-def remove(option: str, name: str, path: str) -> None:
-    """Remove a Docker resource: container, image, or Dockerfile."""
-    if not name:
-        raise click.UsageError("You must provide --name to remove an image.")
-    if option == "container":
-        _remove_container(name)
-    elif option == "image":
-        _remove_image(name)
-    elif option == "dockerfile":
-        _remove_dockerfile(name, path)
-
-
-@cli.command()
-@click.option(
-    "--path",
-    default=".",
-    help="Directory to create or retrieve Dockerfiles (defaults to current directory)",
-)
-@click.option(
-    "--command",
-    default="echo 'Container is running'",
-    type=str,
-    help="Shell command to execute inside the container.",
-)
-@click.option(
-    "--clean/--no-clean",
-    default=True,
-    is_flag=True,
-    help="Enable cleanup after execution (use --no-clean to disable)",
-)
-def default_config(path: str, command: str, *, clean: bool) -> None:
-    """Execute default config file."""
-    if not command.strip():
-        raise click.BadParameter("Command cannot be empty.")
-
+def default_config(path: str, *, clean: bool = True):
+    """Generate, build, and run containers from default config list."""
     try:
         for cfg in config.cfg_list:
             os_name = cfg["os_name"]
             name = cfg["name"]
+            command = 'echo "Container is running"'
 
             generate_file(os_name, name, path)
-            build(name, path, clean=clean)
-            run(name, command, clean=clean)
+            build_image(name, path)
+            run_container(name, command, clean=clean)
+
+            if clean:
+                remove_dockerfile(name)
+                remove_image(name)
+                remove_image(os_name)
     except (ImageNotFound, BuildError, Exception) as e:
-        print(f"ERROR: {e}")
+        click.secho(f"ERROR: {e}", fg="red", file=sys.stderr)
     finally:
-        _remove_dangling()
+        remove_dangling()
