@@ -222,26 +222,26 @@ def run(name: str, command: str, *, clean: bool = False) -> None:
 
 
 @cli.command()
-@click.option(
-    "--image",
-    help="Tag or ID of the Docker image to remove (e.g., 'myapp:latest').",
-    required=True,
+@click.argument(
+    "option",
+    type=click.Choice(["container", "dockerfile", "image"], case_sensitive=False),
 )
-def remove_image(image: str) -> None:
-    """
-    Tag or ID of the Docker image to remove (e.g., 'myapp:latest').
-
-    Args:
-        image (str): The tag or ID of the Docker image to remove.
-
-    """
-    try:
-        client.images.remove(image=image, force=True)
-        click.secho(f"Image '{image}' removed.", fg="green")
-    except ImageNotFound:
-        click.secho(f"Image '{image}' not found.", fg="yellow")
-    except DockerException as e:
-        click.secho(f"Docker error: {e}", fg="red")
+@click.option("--name", help="Name of the resource to remove (image or Dockerfile)")
+@click.option(
+    "--path",
+    default=".",
+    help="Directory to create or retrieve Dockerfiles (defaults to current directory)",
+)
+def remove(option: str, name: str, path: str) -> None:
+    """Remove a Docker resource: container, image, or Dockerfile."""
+    if not name:
+        raise click.UsageError("You must provide --name to remove an image.")
+    if option == "container":
+        _remove_container(name)
+    elif option == "image":
+        _remove_image(name)
+    elif option == "dockerfile":
+        _remove_dockerfile(name, path)
 
 
 @cli.command()
