@@ -18,13 +18,19 @@ from container_tester import _utils, config
 
 logger = logging.getLogger(__name__)
 
-try:
-    client = docker.from_env()
-except DockerException:
-    logger.warning(
-        "Docker is not running. Please start the Docker daemon and try again.",
-    )
-    sys.exit(1)
+
+def docker_client() -> docker.DockerClient:
+    """Return a ready Docker client."""
+    try:
+        client = docker.from_env()
+    except DockerException:
+        click.echo(
+            "Docker is not running. Please start the Docker daemon and try again.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    else:
+        return client
 
 
 @click.group(help=("CLI for testing containers."))
@@ -60,6 +66,8 @@ RUN {sync_cmd}
 
 
 def _remove_dangling() -> None:
+    client = docker_client()
+
     try:
         client.images.prune(filters={"dangling": True})
     except DockerException:
@@ -67,6 +75,8 @@ def _remove_dangling() -> None:
 
 
 def _remove_image(image_tag: str) -> None:
+    client = docker_client()
+
     try:
         click.echo(f"Removing image '{image_tag}'...")
         client.images.remove(image=image_tag, force=True)
@@ -149,6 +159,7 @@ def build(name: str, path: str, *, clean: bool = False) -> None:
     if not name.strip():
         raise click.BadParameter("The '--name' option cannot be empty.")
 
+    client = docker_client()
     image_tag = name
     df_name = f"Dockerfile.{image_tag}"
     start_time = time.time()
@@ -204,6 +215,7 @@ def run(name: str, command: str, *, clean: bool = False) -> None:
         raise click.BadParameter("The '--command' option cannot be empty.")
 
     image_tag = name
+    client = docker_client()
 
     try:
         output = client.containers.run(
