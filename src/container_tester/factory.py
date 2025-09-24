@@ -178,7 +178,7 @@ def build(name: str, path: str, *, clean: bool = False) -> None:
 
 
 @cli.command()
-@click.option("--name", default="", help="Tag name for the Docker image (required)")
+@click.argument("name")
 @click.option(
     "--command",
     default="echo 'Container is running'",
@@ -189,17 +189,17 @@ def build(name: str, path: str, *, clean: bool = False) -> None:
     "--clean/--no-clean",
     default=False,
     is_flag=True,
-    help="Delete Docker image after build (use --clean to enable)",
+    help="Delete Docker container after run (use --clean to enable)",
 )
-def run(
-    name: str,
-    command: str,
-    *,
-    clean: bool = True,
-) -> None:
-    """Something."""
+def run(name: str, command: str, *, clean: bool = False) -> None:
+    """
+    Run a Docker container from a tagged docker image.
+
+    NAME for the Docker image. Required.
+    """
     if not name.strip():
         raise click.BadParameter("The '--name' option cannot be empty.")
+
     if not command.strip():
         raise click.BadParameter("The '--command' option cannot be empty.")
 
@@ -211,7 +211,7 @@ def run(
             command=command,
             name="choreo_base",
             tty=True,
-            remove=True,
+            remove=clean,
             stdout=True,
             stderr=True,
         )
@@ -219,15 +219,6 @@ def run(
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
     else:
         click.echo(output.decode("utf-8", errors="replace"))
-        if clean:
-            remove_image(image_tag)
-
-
-def _clean_dangling() -> None:
-    try:
-        client.images.prune(filters={"dangling": True})
-    except DockerException:
-        pass
 
 
 @cli.command()
