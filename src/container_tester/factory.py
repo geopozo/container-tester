@@ -212,8 +212,49 @@ def run_container(image_tag: str, command: str, *, clean: bool = False) -> None:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
 
 
-def default_config(path: str, *, clean: bool = True):
-    """Generate, build, and run containers from default config list."""
+def test_container(
+    os_name: str,
+    name: str,
+    path: str,
+    *,
+    command: str = "",
+    clean: bool = False,
+) -> None:
+    """
+        Generate, build, and run a container from provided arguments.
+
+    Args:
+        os_name (str): Base OS for the Dockerfile.
+        name (str): Identifier for the image and Dockerfile.
+        path (str): Directory to store the Dockerfile.
+        command (str): Command to execute in the container.
+        clean (bool): If True, remove generated artifacts after execution.
+
+    """
+    try:
+        generate_file(os_name, name, path)
+        build_image(name, path)
+        run_container(name, command, clean=clean)
+
+        if clean:
+            remove_dockerfile(name)
+            remove_image(name)
+            remove_image(os_name)
+            remove_dangling()
+    except (ImageNotFound, BuildError, Exception) as e:
+        click.secho(f"ERROR: {e}", fg="red", file=sys.stderr)
+
+
+def run_config(path: str, *, clean: bool = False) -> None:
+    """
+    Generate, build, and run containers from the default config list.
+
+    Args:
+        path (str): Directory to store Dockerfiles.
+        clean (bool, optional): If True, remove generated files and images
+            after execution.
+
+    """
     try:
         for cfg in config.cfg_list:
             os_name = cfg["os_name"]
