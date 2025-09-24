@@ -128,7 +128,7 @@ def generate_file(os_name: str, name: str, path: str) -> None:
 
 
 @cli.command()
-@click.option("--name", default="", help="Tag name for the Docker image (required)")
+@click.argument("name")
 @click.option(
     "--path",
     default=".",
@@ -138,17 +138,13 @@ def generate_file(os_name: str, name: str, path: str) -> None:
     "--clean/--no-clean",
     default=False,
     is_flag=True,
-    help="Delete Dockerfile after build (use --clean to enable)",
+    help="Delete Docker image after build (use --clean to enable)",
 )
-def build(name: str, path: str, *, clean: bool) -> None:
+def build(name: str, path: str, *, clean: bool = False) -> None:
     """
     Build a Docker image from a tagged Dockerfile.
 
-    Args:
-        name (str): Tag name for the Docker image. Required.
-        path (str): Directory containing the Dockerfile. Defaults to current directory.
-        clean (bool): Whether to delete the Dockerfile after build. Enabled by default.
-
+    NAME for the Docker image. Required.
     """
     if not name.strip():
         raise click.BadParameter("The '--name' option cannot be empty.")
@@ -156,9 +152,9 @@ def build(name: str, path: str, *, clean: bool) -> None:
     image_tag = name
     df_name = f"Dockerfile.{image_tag}"
     start_time = time.time()
-    dir_path = _utils.resolve_dir_path(path)
 
     try:
+        dir_path = _utils.resolve_dir_path(path)
         client.images.build(
             path=f"{dir_path}",
             dockerfile=df_name,
@@ -169,6 +165,8 @@ def build(name: str, path: str, *, clean: bool) -> None:
 
     except BuildError as e:
         click.secho(e.msg, fg="red")
+    except (Exception, TypeError) as e:
+        click.secho(f"{e}", fg="red")
     else:
         secs = time.time() - start_time
         size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
@@ -176,7 +174,7 @@ def build(name: str, path: str, *, clean: bool) -> None:
             f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m",
         )
         if clean:
-            (dir_path / df_name).unlink(missing_ok=True)
+            _remove_image(image_tag)
 
 
 @cli.command()
