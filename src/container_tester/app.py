@@ -80,11 +80,11 @@ def remove_dockerfile(image_tag: str, path: str = ".") -> None:
     try:
         dir_path = _utils.resolve_dir_path(path)
         df_name = f"Dockerfile.{image_tag}"
-        (dir_path / df_name).unlink(missing_ok=True)
-        click.secho(f"Dockerfile '\033[93m{df_name}\033[0m' removed.")
+        (dir_path / df_name).unlink()
+        click.echo(f"Dockerfile '\033[93m{df_name}\033[0m' removed.")
     except DockerException as e:
         click.secho(f"Failed to remove '{df_name}': {e}", fg="red", file=sys.stderr)
-    except (TypeError, Exception) as e:
+    except (TypeError, FileNotFoundError, Exception) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
 
 
@@ -361,19 +361,20 @@ def run_config(path: str, *, clean: bool = False) -> list[dict]:
             os_name = cfg["os_name"]
             name = cfg["name"]
             command = 'echo "Container is running"'
-            info_list.append(
-                {
-                    "dockerfile": generate_file(client, os_name, name, path),
-                    "image": build_image(client, name, path),
-                    "container": run_container(client, name, command, clean=clean),
-                },
-            )
+
+            docker_info = {
+                "dockerfile": generate_file(client, os_name, name, path),
+                "image": build_image(client, name, path),
+                "container": run_container(client, name, command, clean=clean),
+            }
 
             if clean:
                 remove_dockerfile(name)
                 remove_image(client, name)
                 remove_image(client, os_name)
                 remove_dangling(client)
+
+            info_list.append(docker_info)
     except (APIError, Exception) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
         return []
