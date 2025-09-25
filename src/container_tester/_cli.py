@@ -2,7 +2,7 @@ import re
 
 import click
 
-from container_tester import factory
+from container_tester import app
 
 
 @click.command()
@@ -56,6 +56,6 @@ def run_cli(
         )
 
     if os_name.lower() == "all":
-        factory.run_config(path, clean=clean)
+        app.run_config(path, clean=clean)
     else:
-        factory.test_container(os_name, name, path, command=command, clean=clean)
+        app.test_container(os_name, name, path, command=command, clean=clean)

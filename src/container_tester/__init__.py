@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Container Tester Module."""
 
-from container_tester.factory import (
+from container_tester.app import (
     build_image,
     docker_client,
     generate_file,
