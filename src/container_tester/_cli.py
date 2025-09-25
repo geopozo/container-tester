@@ -1,3 +1,4 @@
+import pprint
 import re
 
 import click
@@ -57,6 +58,8 @@ def run_cli(
         )
 
     if os_name.lower() == "all":
-        app.run_config(path, clean=clean)
+        out = app.run_config(path, clean=clean)
     else:
-        app.test_container(os_name, name, path, command=command, clean=clean)
+        out = app.test_container(os_name, name, path, command=command, clean=clean)
+
+    pprint.pp(out)

@@ -164,7 +164,7 @@ def generate_file(
     os_name: str,
     name: str,
     path: str,
-) -> None:
+) -> dict | None:
     """
     Generate a Dockerfile for the given OS and name at the specified path.
 
@@ -181,15 +181,20 @@ def generate_file(
         dir_path = _utils.resolve_dir_path(path, mkdir=True)
         df_name = f"Dockerfile.{name}"
         content = _dockerfile_template(os_name, [])  # no commands for now
-
         (dir_path / df_name).write_text(content)
-        click.echo(f"\n'\033[93m{df_name}\033[0m' generated.")
     except (OSError, TypeError, ValueError) as e:
         click.secho(
             f"{type(e).__name__}:\nFailed to generate Dockerfile: {e}",
             fg="red",
             file=sys.stderr,
         )
+        return None
+    else:
+        return {
+            "name": df_name,
+            "full_path": f"{dir_path}/{df_name}",
+            "status": "generated",
+        }
 
 
 def build_image(
@@ -198,7 +203,7 @@ def build_image(
     path: str,
     *,
     clean: bool = False,
-) -> None:
+) -> dict | None:
     """
     Build a Docker image from a tagged Dockerfile and optionally remove it after build.
 
@@ -211,10 +216,8 @@ def build_image(
             Defaults to False.
 
     """
-    df_name = f"Dockerfile.{image_tag}"
-    start_time = time.time()
-
     try:
+        df_name = f"Dockerfile.{image_tag}"
         dir_path = _utils.resolve_dir_path(path)
         client.images.build(
             path=f"{dir_path}",
@@ -226,16 +229,25 @@ def build_image(
 
     except BuildError as e:
         click.secho(e.msg, fg="red", file=sys.stderr)
-    except (APIError, TypeError, Exception) as e:
+        return None
+    except (APIError, TypeError) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
+        return None
     else:
-        secs = time.time() - start_time
-        size = client.images.get(image_tag).attrs["Size"] / (1024 * 1024)
-        click.echo(
-            f"[{image_tag}] \033[94m{size:.1f} MB\033[0m | \033[93m{secs:.1f}s\033[0m",
-        )
+        output = client.images.get(image_tag)
+        size = output.attrs["Size"] / (1024 * 1024)
+
         if clean:
             remove_image(client, image_tag)
+
+        return {
+            "name": image_tag,
+            "os": {
+                "architecture": output.attrs["Architecture"],
+                "base": output.attrs["Os"],
+            },
+            "size": f"{size} MB",
+        }
 
 
 def run_container(
@@ -244,7 +256,7 @@ def run_container(
     command: str,
     *,
     clean: bool = False,
-) -> None:
+) -> dict | None:
     """
     Run a container from a Docker image with the given command.
 
@@ -258,18 +270,34 @@ def run_container(
 
     """
     try:
-        output = client.containers.run(
+        timestamp = int(time.time())
+        name = f"container_test_{image_tag}_{timestamp}"
+        cmd_output = client.containers.run(
             image_tag,
             command=command or 'echo "Container is running"',
-            name=f"container_test_{image_tag}",
+            name=name,
             tty=True,
-            remove=clean,
             stdout=True,
             stderr=True,
         )
-        click.echo(output.decode("utf-8", errors="replace"))
-    except (ContainerError, ImageNotFound, APIError, Exception) as e:
+    except (ContainerError, ImageNotFound, APIError) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
+        return None
+    else:
+        output = client.containers.get(name)
+        state = output.attrs["State"]
+        config = output.attrs["Config"]
+
+        if clean:
+            remove_container(client, name)
+
+        return {
+            "name": name,
+            "command": config["Cmd"],
+            "env": config["Env"],
+            "status": state["Status"],
+            "output": cmd_output.decode("utf-8", errors="replace"),
+        }
 
 
 def test_container(
@@ -279,7 +307,7 @@ def test_container(
     *,
     command: str = "",
     clean: bool = False,
-) -> None:
+) -> dict | None:
     """
     Generate, build, and run a container from provided arguments.
 
@@ -294,19 +322,24 @@ def test_container(
     client = docker_client()
 
     try:
-        generate_file(client, os_name, name, path)
-        build_image(client, name, path)
-        run_container(client, name, command, clean=clean)
-        remove_dangling(client)
+        docker_info = {
+            "dockerfile": generate_file(client, os_name, name, path),
+            "image": build_image(client, name, path),
+            "container": run_container(client, name, command, clean=clean),
+        }
 
         if clean:
             remove_dockerfile(name)
             remove_image(client, name)
+            remove_dangling(client)
     except (ImageNotFound, BuildError, Exception) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
+        return None
+    else:
+        return docker_info
 
 
-def run_config(path: str, *, clean: bool = False) -> None:
+def run_config(path: str, *, clean: bool = False) -> list[dict]:
     """
     Generate, build, and run containers from the default config list.
 
@@ -317,22 +350,32 @@ def run_config(path: str, *, clean: bool = False) -> None:
 
     """
     client = docker_client()
+    info_list = []
 
     try:
-        for cfg in config.cfg_list:
+        click.echo(f"Container Tests: {len(config.cfg_list)}")
+        for i, cfg in enumerate(config.cfg_list):
+            click.echo(
+                f"\n{click.style('Test', fg='green')}: {i + 1}/{len(config.cfg_list)}",
+            )
             os_name = cfg["os_name"]
             name = cfg["name"]
             command = 'echo "Container is running"'
-
-            generate_file(client, os_name, name, path)
-            build_image(client, name, path)
-            run_container(client, name, command, clean=clean)
+            info_list.append(
+                {
+                    "dockerfile": generate_file(client, os_name, name, path),
+                    "image": build_image(client, name, path),
+                    "container": run_container(client, name, command, clean=clean),
+                },
+            )
 
             if clean:
                 remove_dockerfile(name)
                 remove_image(client, name)
                 remove_image(client, os_name)
-    except (ImageNotFound, BuildError, Exception) as e:
+                remove_dangling(client)
+    except (APIError, Exception) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
-    finally:
-        remove_dangling(client)
+        return []
+    else:
+        return info_list
