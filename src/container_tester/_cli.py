@@ -38,9 +38,10 @@ def run_cli(
     clean: bool = False,
 ) -> None:
     """
-    Generate, build, and run Docker containers from a base image or config list.
+    Generate, build, and run Docker resources from a base image or config list.
 
     OS_NAME base Docker image to initialize from (e.g., 'ubuntu:20.04').
+        (default: all).
 
     """
     if not os_name.strip():
