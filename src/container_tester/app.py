@@ -118,13 +118,14 @@ def remove_container(client: docker.DockerClient, container_id: str) -> None:
 
     """
     try:
-        containers: list[containers.Container] = client.containers.list()
+        containers: list[containers.Container] = client.containers.list(all=True)
+
         for container in containers:
             if container.name == container_id:
                 container.stop()
-                container.remove()
+                container.remove(force=True)
+                click.secho(f"Container '\033[93m{container_id}\033[0m' removed.")
                 break
-        click.secho(f"Container '\033[93m{container_id}\033[0m' removed.")
     except NotFound:
         click.secho(
             f"Container '{container_id}' not found.",
