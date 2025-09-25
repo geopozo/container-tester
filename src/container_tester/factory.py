@@ -118,7 +118,7 @@ def remove_dangling() -> None:
 def _image_exists(client: docker.DockerClient, image_tag: str) -> None:
     try:
         client.images.pull(image_tag)
-    except (APIError, ImageNotFound, Exception) as e:
+    except (APIError, ImageNotFound) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
         sys.exit(1)
 
@@ -221,7 +221,7 @@ def run_container(
         output = client.containers.run(
             image_tag,
             command=command or 'echo "Container is running"',
-            name=f"choreo_base_{image_tag}",
+            name=f"container_test_{image_tag}",
             tty=True,
             remove=clean,
             stdout=True,
@@ -257,11 +257,11 @@ def test_container(
         generate_file(client, os_name, name, path)
         build_image(client, name, path)
         run_container(client, name, command, clean=clean)
+        remove_dangling()
 
         if clean:
             remove_dockerfile(name)
             remove_image(client, name)
-            remove_dangling()
     except (ImageNotFound, BuildError, Exception) as e:
         click.secho(f"ERROR: {e}", fg="red", file=sys.stderr)
 
