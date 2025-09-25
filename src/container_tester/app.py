@@ -5,6 +5,7 @@ from __future__ import annotations
 import pathlib
 import sys
 import time
+from typing import TYPE_CHECKING
 
 import click
 import docker
@@ -14,9 +15,13 @@ from docker.errors import (
     ContainerError,
     DockerException,
     ImageNotFound,
+    NotFound,
 )
 
 from container_tester import _utils, config
+
+if TYPE_CHECKING:
+    from docker.models import containers
 
 # ruff: noqa: T201 allow print in CLI
 
@@ -99,6 +104,34 @@ def remove_image(client: docker.DockerClient, image_tag: str) -> None:
     except ImageNotFound:
         click.secho(f"Image '{image_tag}' not found.", fg="yellow", file=sys.stderr)
     except (APIError, DockerException, Exception) as e:
+        click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
+
+
+def remove_container(client: docker.DockerClient, container_id: str) -> None:
+    """
+    Remove a Docker container by container-name.
+
+    Args:
+        client (DockerClient): Docker SDK client instance used to
+            perform the build.
+        container_id (str): Container name or ID to remove.
+
+    """
+    try:
+        containers: list[containers.Container] = client.containers.list()
+        for container in containers:
+            if container.name == container_id:
+                container.stop()
+                container.remove()
+                break
+        click.secho(f"Container '\033[93m{container_id}\033[0m' removed.")
+    except NotFound:
+        click.secho(
+            f"Container '{container_id}' not found.",
+            fg="yellow",
+            file=sys.stderr,
+        )
+    except APIError as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
 
 
