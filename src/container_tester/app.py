@@ -282,6 +282,7 @@ def run_container(
             stdout=True,
             stderr=True,
         )
+        container.wait()
     except (ContainerError, ImageNotFound, APIError) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
         return {"stderr": f"{type(e).__name__}:\n{e}"}
@@ -295,6 +296,7 @@ def run_container(
 
         return {
             "name": name,
+            "container_id": container.id,
             "command": config.get("Cmd"),
             "stdout": stdout_logs,
             "stderr": stderr_logs,
