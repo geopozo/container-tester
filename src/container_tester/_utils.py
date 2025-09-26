@@ -1,9 +1,10 @@
 import json
 import pathlib
+from typing import Any
 
 
 class AutoEncoder(json.JSONEncoder):
-    def default(self, o):
+    def default(self, o: Any) -> Any:
         if hasattr(o, "__json__"):
             return o.__json__()
         return super().default(o)
@@ -28,5 +29,5 @@ def resolve_dir_path(
     return dir_path
 
 
-def format_json(data, *, pretty=False):
+def format_json(data: Any, *, pretty: bool = False) -> str:
     return json.dumps(data, indent=2 if pretty else None, cls=AutoEncoder)
