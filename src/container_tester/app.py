@@ -5,7 +5,7 @@ from __future__ import annotations
 import pathlib
 import sys
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import click
 import docker
@@ -164,7 +164,7 @@ def generate_file(
     name: str,
     path: str,
     commands: list[str],
-) -> dict | None:
+) -> dict[str, Any] | None:
     """
     Generate a Dockerfile for the given OS and name at the specified path.
 
@@ -205,7 +205,7 @@ def build_image(
     path: str,
     *,
     clean: bool = False,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """
     Build a Docker image from a tagged Dockerfile and optionally remove it after build.
 
@@ -258,7 +258,7 @@ def run_container(
     command: str,
     *,
     clean: bool = False,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """
     Run a container from a Docker image with the given command.
 
@@ -308,7 +308,7 @@ def test_container(
     command: str,
     *,
     clean: bool = False,
-) -> dict | None:
+) -> list[dict[str, Any]] | None:
     """
     Generate, build, and run a container from provided arguments.
 
@@ -335,12 +335,12 @@ def test_container(
             remove_dangling(client)
     except (ImageNotFound, BuildError, Exception) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
-        return {"stderr": f"{type(e).__name__}:\n{e}"}
+        return None
     else:
-        return docker_info
+        return [docker_info]
 
 
-def run_config(path: str, *, clean: bool = False) -> list[dict]:
+def run_config(path: str, *, clean: bool = False) -> list[dict[str, Any]] | None:
     """
     Generate, build, and run containers from the default config list.
 
@@ -385,8 +385,6 @@ def run_config(path: str, *, clean: bool = False) -> list[dict]:
 
     except (APIError, Exception) as e:
         click.secho(f"{type(e).__name__}:\n{e}", fg="red", file=sys.stderr)
-        info_list.append({"stderr": f"{type(e).__name__}:\n{e}"})
-
-        return info_list
+        return None
     else:
         return info_list
