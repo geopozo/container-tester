@@ -1,4 +1,12 @@
+import json
 import pathlib
+
+
+class AutoEncoder(json.JSONEncoder):
+    def default(self, o):
+        if hasattr(o, "__json__"):
+            return o.__json__()
+        return super().default(o)
 
 
 def resolve_dir_path(
@@ -18,3 +26,7 @@ def resolve_dir_path(
         dir_path.mkdir(parents=True, exist_ok=True)
 
     return dir_path
+
+
+def format_json(data, *, pretty=False):
+    return json.dumps(data, indent=2 if pretty else None, cls=AutoEncoder)
