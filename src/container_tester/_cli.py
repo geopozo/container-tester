@@ -1,9 +1,10 @@
-import pprint
 import re
 
 import click
 
-from container_tester import app
+from container_tester import _utils, app
+
+# ruff: noqa: T201 allow print in CLI
 
 
 @click.command()
@@ -30,13 +31,20 @@ from container_tester import app
     is_flag=True,
     help="Clean Docker resources after run (use --clean to enable)",
 )
-def run_cli(
+@click.option(
+    "--pretty",
+    default=False,
+    is_flag=True,
+    help="Show output in Pretty format",
+)
+def run_cli(  # noqa: PLR0913
     os_name: str,
     name: str,
     path: str,
+    command: str,
     *,
-    command: str = "",
     clean: bool = False,
+    pretty: bool = False,
 ) -> None:
     """
     Generate, build, and run Docker resources from a base image or config list.
@@ -60,6 +68,6 @@ def run_cli(
     if os_name.lower() == "all":
         out = app.run_config(path, clean=clean)
     else:
-        out = app.test_container(os_name, name, path, command=command, clean=clean)
+        out = app.test_container(os_name, name, path, command, clean=clean)
 
-    pprint.pp(out)
+    click.echo(_utils.format_json(out, pretty=pretty))

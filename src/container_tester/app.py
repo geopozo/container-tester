@@ -194,7 +194,6 @@ def generate_file(
             "name": df_name,
             "full_path": f"{dir_path}/{df_name}",
             "os_name": image.attrs.get("RepoTags"),
-            "stdout": content,
         }
 
 
@@ -287,7 +286,6 @@ def run_container(
     else:
         stdout_logs = container.logs(stdout=True, stderr=False).decode()
         stderr_logs = container.logs(stdout=False, stderr=True).decode()
-        state = container.attrs.get("State", {})
         config = container.attrs.get("Config", {})
 
         if clean:
@@ -296,7 +294,6 @@ def run_container(
         return {
             "name": name,
             "command": config.get("Cmd"),
-            "status": "removed" if clean else state.get("Status"),
             "stdout": stdout_logs,
             "stderr": stderr_logs,
         }
@@ -306,8 +303,8 @@ def test_container(
     os_name: str,
     name: str,
     path: str,
+    command: str,
     *,
-    command: str = "",
     clean: bool = False,
 ) -> dict | None:
     """
