@@ -163,6 +163,7 @@ def generate_file(
     os_name: str,
     name: str,
     path: str,
+    commands: list[str],
 ) -> dict | None:
     """
     Generate a Dockerfile for the given OS and name at the specified path.
@@ -173,6 +174,7 @@ def generate_file(
         os_name (str): Base OS for the Dockerfile.
         name (str): Identifier used in the Dockerfile name.
         path (str): Directory to save the Dockerfile.
+        commands (list[str]): List of shell commands to include in the Dockerfile.
 
     """
     image = _image_exists(client, os_name)
@@ -180,7 +182,7 @@ def generate_file(
     try:
         dir_path = _utils.resolve_dir_path(path, mkdir=True)
         df_name = f"Dockerfile.{name}"
-        content = _dockerfile_template(os_name, [])  # no commands for now
+        content = _dockerfile_template(os_name, commands)
         (dir_path / df_name).write_text(content)
     except (OSError, TypeError, ValueError) as e:
         click.secho(
@@ -322,7 +324,7 @@ def test_container(
 
     try:
         docker_info = {
-            "dockerfile": generate_file(client, os_name, name, path),
+            "dockerfile": generate_file(client, os_name, name, path, []),
             "image": build_image(client, name, path),
             "container": run_container(client, name, command, clean=clean),
         }
@@ -359,12 +361,18 @@ def run_config(path: str, *, clean: bool = False) -> list[dict]:
             )
             os_name = cfg["os_name"]
             name = cfg["name"]
-            command = 'echo "Container is running"'
+            commands = cfg["commands"]
+            test_command = 'echo "Container is running"'
 
             docker_info = {
-                "dockerfile": generate_file(client, os_name, name, path),
+                "dockerfile": generate_file(client, os_name, name, path, commands),
                 "image": build_image(client, name, path),
-                "container": run_container(client, name, command, clean=clean),
+                "container": run_container(
+                    client,
+                    name,
+                    test_command,
+                    clean=clean,
+                ),
             }
 
             if clean:
