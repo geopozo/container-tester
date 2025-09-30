@@ -22,7 +22,11 @@ authors = [
   { name = "David Angarita", email = "davidangarita.sistemas@gmail.com" },
 ]
 maintainers = [{ name = "Andrew Pikul", email = "ajpikul@gmail.com" }]
-dependencies = ["click>=8.1.8", "docker>=7.1.0"]
+dependencies = [
+  "click>=8.1.8",
+  "docker>=7.1.0",
+  "toml>=0.10.2",
+]
 
 [project.scripts]
 contest = "container_tester._cli:run_cli"
