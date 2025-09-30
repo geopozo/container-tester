@@ -158,7 +158,7 @@ def _image_exists(client: DockerClient, image_tag: str) -> DockerImage:
         return image
 
 
-def generate_file(
+def generate_dockerfile(
     client: DockerClient,
     os_name: str,
     name: str,
@@ -326,7 +326,7 @@ def test_container(
 
     try:
         docker_info = {
-            "dockerfile": generate_file(client, os_name, name, path, []),
+            "dockerfile": generate_dockerfile(client, os_name, name, path, []),
             "image": build_image(client, name, path),
             "container": run_container(client, name, command, clean=clean),
         }
@@ -367,7 +367,13 @@ def run_config(path: str, *, clean: bool = False) -> list[dict[str, Any]] | None
             test_command = 'echo "Container is running"'
 
             docker_info = {
-                "dockerfile": generate_file(client, os_name, name, path, commands),
+                "dockerfile": generate_dockerfile(
+                    client,
+                    os_name,
+                    name,
+                    path,
+                    commands,
+                ),
                 "image": build_image(client, name, path),
                 "container": run_container(
                     client,

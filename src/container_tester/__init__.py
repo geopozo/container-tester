@@ -4,7 +4,7 @@
 from container_tester.app import (
     build_image,
     docker_client,
-    generate_file,
+    generate_dockerfile,
     remove_container,
     remove_dockerfile,
     remove_image,
@@ -16,7 +16,7 @@ from container_tester.app import (
 __all__ = [
     "build_image",
     "docker_client",
-    "generate_file",
+    "generate_dockerfile",
     "remove_container",
     "remove_dockerfile",
     "remove_image",
