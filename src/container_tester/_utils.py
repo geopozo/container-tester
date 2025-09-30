@@ -31,10 +31,31 @@ def resolve_dir_path(
             dir_path.mkdir(parents=True, exist_ok=True)
 
     except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
-        print(f"{type(e).__name__}:\n{e}")
+        print(f"{type(e).__name__}:\n{e}", file=sys.stderr)
         sys.exit(1)
     else:
         return dir_path
+
+
+def resolve_file_path(
+    path: str,
+    *,
+    touch: bool = False,
+) -> pathlib.Path:
+    file_path = pathlib.Path(path).expanduser()
+
+    if not file_path.is_absolute():
+        file_path = file_path.resolve()
+
+    if file_path.is_file():
+        return file_path
+
+    if touch:
+        file_path.touch()
+    elif not file_path.is_file():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    return file_path
 
 
 def format_json(data: Any, *, pretty: bool = False) -> str:
