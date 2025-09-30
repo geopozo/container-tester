@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
-import pathlib
 import sys
+import tomllib as toml
+from pathlib import Path
 from typing import Any
 
 # ruff: noqa: T201 allow print in CLI
@@ -17,9 +20,9 @@ def resolve_dir_path(
     path: str,
     *,
     mkdir: bool = False,
-) -> pathlib.Path:
+) -> Path:
     try:
-        dir_path = pathlib.Path(path).expanduser()
+        dir_path = Path(path).expanduser()
 
         if not dir_path.is_absolute():
             dir_path = dir_path.resolve()
@@ -37,25 +40,25 @@ def resolve_dir_path(
         return dir_path
 
 
-def resolve_file_path(
-    path: str,
-    *,
-    touch: bool = False,
-) -> pathlib.Path:
-    file_path = pathlib.Path(path).expanduser()
+def load_config() -> list[Any]:
+    file_name = "docker-config.toml"
+    default_path = Path(f"src/container_tester/{file_name}").resolve()
+    user_path = Path(file_name).expanduser()
 
-    if not file_path.is_absolute():
-        file_path = file_path.resolve()
+    config_path = user_path if user_path.is_file() else default_path
 
-    if file_path.is_file():
-        return file_path
+    try:
+        with config_path.open("rb") as f:
+            data = toml.load(f)
+            config_list = data.get("docker_configs", {}).get("profile", [])
+    except toml.TOMLDecodeError as e:
+        print(f"Error parsing TOML from {config_path}: {e}", file=sys.stderr)
+    except OSError as e:
+        print(f"Error reading config file {config_path}: {e}", file=sys.stderr)
+    else:
+        return config_list
 
-    if touch:
-        file_path.touch()
-    elif not file_path.is_file():
-        raise FileNotFoundError(f"File not found: {file_path}")
-
-    return file_path
+    return []
 
 
 def format_json(data: Any, *, pretty: bool = False) -> str:

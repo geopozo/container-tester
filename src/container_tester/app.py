@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import pathlib
 import sys
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypedDict
 
 import click
@@ -50,8 +50,8 @@ def docker_client() -> DockerClient:
 
 
 def _dockerfile_template(os_name: str, commands: list[str]) -> str:
-    has_py = pathlib.Path("pyproject.toml").exists()
-    has_lock = pathlib.Path("uv.lock").exists()
+    has_py = Path("pyproject.toml").exists()
+    has_lock = Path("uv.lock").exists()
     dependencies = []
     if has_py:
         dependencies.append("COPY pyproject.toml /app/pyproject.toml")
