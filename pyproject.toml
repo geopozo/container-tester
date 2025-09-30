@@ -10,7 +10,7 @@ enabled = true
 
 [project]
 name = "container-tester"
-description = "Generate multiple docker cointainers"
+description = "Generate multiple docker cointainers to test projects"
 dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.8"
