@@ -161,7 +161,7 @@ def _image_exists(client: DockerClient, image_tag: str) -> DockerImage:
 def generate_dockerfile(
     client: DockerClient,
     os_name: str,
-    name: str,
+    image_tag: str,
     path: str,
     commands: list[str],
 ) -> dict[str, Any] | None:
@@ -172,7 +172,7 @@ def generate_dockerfile(
         client (DockerClient): Docker SDK client instance used to
             perform the build.
         os_name (str): Base OS for the Dockerfile.
-        name (str): Identifier used in the Dockerfile name.
+        image_tag (str): Identifier used in the Dockerfile name.
         path (str): Directory to save the Dockerfile.
         commands (list[str]): List of shell commands to include in the Dockerfile.
 
@@ -181,7 +181,7 @@ def generate_dockerfile(
 
     try:
         dir_path = _utils.resolve_dir_path(path, mkdir=True)
-        df_name = f"Dockerfile.{name}"
+        df_name = f"Dockerfile.{image_tag}"
         content = _dockerfile_template(os_name, commands)
         (dir_path / df_name).write_text(content)
     except (OSError, TypeError, ValueError) as e:
@@ -362,7 +362,7 @@ def run_config(path: str, *, clean: bool = False) -> list[dict[str, Any]] | None
                 (f"{click.style('Test', fg='green')}: {i + 1}/{len(config.cfg_list)}"),
             )
             os_name = cfg["os_name"]
-            name = cfg["name"]
+            image_tag = cfg["image_tag"]
             commands = cfg["commands"]
             test_command = 'echo "Container is running"'
 
@@ -370,22 +370,22 @@ def run_config(path: str, *, clean: bool = False) -> list[dict[str, Any]] | None
                 "dockerfile": generate_dockerfile(
                     client,
                     os_name,
-                    name,
+                    image_tag,
                     path,
                     commands,
                 ),
-                "image": build_image(client, name, path),
+                "image": build_image(client, image_tag, path),
                 "container": run_container(
                     client,
-                    name,
+                    image_tag,
                     test_command,
                     clean=clean,
                 ),
             }
 
             if clean:
-                remove_dockerfile(name)
-                remove_image(client, name)
+                remove_dockerfile(image_tag)
+                remove_image(client, image_tag)
                 remove_image(client, os_name)
                 remove_dangling(client)
 
