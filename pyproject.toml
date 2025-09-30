@@ -8,6 +8,9 @@ find = { namespaces = false, where = ["src"] }
 [tool.setuptools-git-versioning]
 enabled = true
 
+[tool.setuptools.package-data]
+container_tester = ['container_tester/docker-config.toml']
+
 [project]
 name = "container-tester"
 description = "Generate multiple docker cointainers to test projects"
