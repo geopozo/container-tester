@@ -5,7 +5,7 @@ from __future__ import annotations
 import pathlib
 import sys
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypedDict
 
 import click
 import docker
@@ -18,12 +18,21 @@ from docker.errors import (
     NotFound,
 )
 
-from container_tester import _utils, config
+from container_tester import _utils
 
 if TYPE_CHECKING:
     from docker import DockerClient
     from docker.models.containers import Container as DockerContainer
     from docker.models.images import Image as DockerImage
+
+
+class DockerConfig(TypedDict):
+    """Type a docker config."""
+
+    image_tag: str
+    os_name: str
+    commands: list[str]
+    pkg_manager: str
 
 
 def docker_client() -> DockerClient:
@@ -342,12 +351,18 @@ def test_container(
         return [docker_info]
 
 
-def run_config(path: str, *, clean: bool = False) -> list[dict[str, Any]] | None:
+def run_config(
+    path: str,
+    config_list: list[DockerConfig],
+    *,
+    clean: bool = False,
+) -> list[dict[str, Any]] | None:
     """
     Generate, build, and run containers from the default config list.
 
     Args:
         path (str): Directory to store Dockerfiles.
+        config_list (list[DockerConfig]): Docker image profiles to generate files from.
         clean (bool, optional): If True, remove generated files and images
             after execution.
 
@@ -356,10 +371,10 @@ def run_config(path: str, *, clean: bool = False) -> list[dict[str, Any]] | None
     info_list = []
 
     try:
-        click.echo(f"Container Tests: {len(config.cfg_list)}")
-        for i, cfg in enumerate(config.cfg_list):
+        click.echo(f"Container Tests: {len(config_list)}")
+        for i, cfg in enumerate(config_list):
             click.echo(
-                (f"{click.style('Test', fg='green')}: {i + 1}/{len(config.cfg_list)}"),
+                (f"{click.style('Test', fg='green')}: {i + 1}/{len(config_list)}"),
             )
             os_name = cfg["os_name"]
             image_tag = cfg["image_tag"]

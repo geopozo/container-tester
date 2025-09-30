@@ -2,7 +2,7 @@ import re
 
 import click
 
-from container_tester import _utils, app
+from container_tester import _utils, app, config
 
 # ruff: noqa: T201 allow print in CLI
 
@@ -66,7 +66,7 @@ def run_cli(  # noqa: PLR0913
         )
 
     if os_name.lower() == "all":
-        out = app.run_config(path, clean=clean)
+        out = app.run_config(path, config.cfg_list, clean=clean)
     else:
         out = app.test_container(os_name, name, path, command, clean=clean)
 
