@@ -53,15 +53,11 @@ def docker_client() -> DockerClient:
 
 def _dockerfile_template(os_name: str, os_commands: list[str]) -> str:
     has_py = Path("pyproject.toml").exists()
-    has_lock = Path("uv.lock").exists()
     dependencies = []
     if has_py:
         dependencies.append("COPY pyproject.toml /app/pyproject.toml")
-    if has_lock:
-        dependencies.append("COPY uv.lock /app/uv.lock")
-    deps = "\n".join(dependencies) if dependencies else "# no pyproject/lock detected"
+    deps = "\n".join(dependencies) if dependencies else "# no pyproject detected"
     cmds = "\n".join(f"RUN {cmd}" for cmd in os_commands) if os_commands else ""
-    sync_cmd = "uv sync --locked" if has_lock else "uv sync"
     return f"""\
 FROM {os_name}
 
@@ -70,10 +66,8 @@ WORKDIR /app
 
 {deps}
 
-ENV UV_LINK_MODE=copy
 ADD . /app
 
-#RUN {sync_cmd}
 {cmds}
 """
 
