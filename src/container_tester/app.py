@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypedDict
 
 import docker
+import typer
 from docker.errors import (
     APIError,
     BuildError,
@@ -41,9 +42,9 @@ def docker_client() -> DockerClient:
     try:
         client = docker.from_env()
     except DockerException:
-        print(
+        typer.echo(
             "Docker is not running. Please start the Docker daemon and try again.",
-            file=sys.stderr,
+            err=True,
         )
         sys.exit(1)
     else:
@@ -77,7 +78,7 @@ ADD . /app
 """
 
 
-def remove_dockerfile(image_tag: str, path: str = ".") -> None:
+def remove_dockerfile(image_tag: str, path: str) -> None:
     """
     Remove a Dockerfile matching the image tag from the given path.
 
@@ -92,9 +93,9 @@ def remove_dockerfile(image_tag: str, path: str = ".") -> None:
         df_name = f"Dockerfile.{image_tag}"
         (dir_path / df_name).unlink()
     except DockerException as e:
-        print(f"\033[91mFailed to remove '{df_name}': {e}\033[0m", file=sys.stderr)
+        typer.secho(f"Failed to remove '{df_name}': {e}", fg=typer.colors.RED, err=True)
     except (TypeError, FileNotFoundError, Exception) as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
 
 
 def remove_image(client: DockerClient, image_tag: str) -> None:
@@ -110,9 +111,9 @@ def remove_image(client: DockerClient, image_tag: str) -> None:
     try:
         client.images.remove(image=image_tag, force=True)
     except ImageNotFound:
-        print(f"\033[93mImage '{image_tag}' not found.\033[0m", file=sys.stderr)
-    except (APIError, DockerException, Exception) as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"Image '{image_tag}' not found.", fg=typer.colors.RED)
+    except (APIError, DockerException) as e:
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
 
 
 def remove_container(client: DockerClient, container_id: str) -> None:
@@ -134,12 +135,13 @@ def remove_container(client: DockerClient, container_id: str) -> None:
                 container.remove(force=True)
                 break
     except NotFound:
-        print(
-            f"\033[93mContainer '{container_id}' not found.\033[0m",
-            file=sys.stderr,
+        typer.secho(
+            f"Container '{container_id}' not found.",
+            fg=typer.colors.YELLOW,
+            err=True,
         )
     except APIError as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
 
 
 def remove_dangling(client: DockerClient) -> None:
@@ -161,7 +163,7 @@ def _image_exists(client: DockerClient, image_tag: str) -> DockerImage:
     try:
         image = client.images.pull(image_tag)
     except (APIError, ImageNotFound, Exception) as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
         sys.exit(1)
     else:
         return image
@@ -194,15 +196,16 @@ def generate_dockerfile(
         content = _dockerfile_template(os_name, os_commands)
         (dir_path / df_name).write_text(content)
     except (OSError, TypeError, ValueError) as e:
-        print(
-            f"\033[91m{type(e).__name__}:\nFailed to generate Dockerfile: {e}\033[0m",
-            file=sys.stderr,
+        typer.secho(
+            f"{type(e).__name__}:\nFailed to generate Dockerfile: {e}",
+            fg=typer.colors.RED,
+            err=True,
         )
         return {"stderr": f"{type(e).__name__}:\n{e}"}
     else:
         return {
             "name": df_name,
-            "full_path": f"{dir_path}/{df_name}",
+            "full_path": (dir_path / df_name).as_posix(),
             "os_name": image.attrs.get("RepoTags"),
         }
 
@@ -237,10 +240,10 @@ def build_image(
             forcerm=True,
         )
     except BuildError as e:
-        print(f"\033[91m{e.msg}\033[0m", file=sys.stderr)
+        typer.secho(e.msg, fg=typer.colors.RED, err=True)
         return {"stderr": f"{type(e).__name__}:\n{e.msg}"}
     except (APIError, TypeError) as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
         return {"stderr": f"{type(e).__name__}:\n{e}"}
     else:
         size = image.attrs.get("Size", "") / (1024 * 1024)
@@ -292,7 +295,7 @@ def run_container(
         )
         container.wait()
     except (ContainerError, ImageNotFound, APIError) as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
         return {"stderr": f"{type(e).__name__}:\n{e}"}
     else:
         stdout_logs = container.logs(stdout=True, stderr=False).decode()
@@ -340,11 +343,11 @@ def test_container(
         }
 
         if clean:
-            remove_dockerfile(name)
+            remove_dockerfile(name, path)
             remove_image(client, name)
             remove_dangling(client)
     except (ImageNotFound, BuildError, Exception) as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
         return None
     else:
         return [docker_info]
@@ -353,6 +356,7 @@ def test_container(
 def run_config(
     path: str,
     config_list: list[DockerConfig],
+    command: str,
     *,
     clean: bool = False,
 ) -> list[dict[str, Any]] | None:
@@ -362,6 +366,7 @@ def run_config(
     Args:
         path (str): Directory to store Dockerfiles.
         config_list (list[DockerConfig]): Docker image profiles to generate files from.
+        command (str): Command to execute in the container.
         clean (bool, optional): If True, remove generated files and images
             after execution.
 
@@ -370,15 +375,14 @@ def run_config(
     info_list = []
 
     try:
-        print(f"Container Tests: {len(config_list)}")
+        typer.echo(f"Container Tests: {len(config_list)}")
         for i, cfg in enumerate(config_list):
-            print(
-                (f"\033[92mTest:\033[0m {i + 1}/{len(config_list)}"),
-            )
+            typer.secho(f"Test: {i + 1}/{len(config_list)}")
+
             os_name = cfg["os_name"]
             image_tag = cfg["image_tag"]
             os_commands = cfg["os_commands"]
-            test_command = 'echo "Container is running"'
+            command = command or 'echo "Container is running"'
 
             docker_info = {
                 "dockerfile": generate_dockerfile(
@@ -392,13 +396,13 @@ def run_config(
                 "container": run_container(
                     client,
                     image_tag,
-                    test_command,
+                    command,
                     clean=clean,
                 ),
             }
 
             if clean:
-                remove_dockerfile(image_tag)
+                remove_dockerfile(image_tag, path)
                 remove_image(client, image_tag)
                 remove_image(client, os_name)
                 remove_dangling(client)
@@ -406,7 +410,7 @@ def run_config(
             info_list.append(docker_info)
 
     except (APIError, Exception) as e:
-        print(f"\033[91m{type(e).__name__}:\n{e}\033[0m", file=sys.stderr)
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
         return None
     else:
         return info_list

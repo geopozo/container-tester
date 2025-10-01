@@ -1,66 +1,49 @@
 import re
+from typing import Annotated
 
-import click
+import rich
+import typer
 
 from container_tester import _utils, app
 
 # ruff: noqa: T201 allow print in CLI
 
 
-@click.command()
-@click.argument("os-name", default="all", required=False)
-@click.option(
-    "--name",
-    default="",
-    help="Custom name for the generated Dockerfile or Image",
-)
-@click.option(
-    "--path",
-    default="",
-    help="Directory to create or retrieve Dockerfiles. (default: current)",
-)
-@click.option(
-    "--command",
-    default="",
-    type=str,
-    help="Shell command to execute inside the container.",
-)
-@click.option(
-    "--clean/--no-clean",
-    default=False,
-    is_flag=True,
-    help="Clean Docker resources after run (use --clean to enable)",
-)
-@click.option(
-    "--pretty",
-    default=False,
-    is_flag=True,
-    help="Show output in Pretty format",
-)
-def run_cli(  # noqa: PLR0913
-    os_name: str,
-    name: str,
-    path: str,
-    command: str,
+def main(  # noqa: PLR0913
+    os_name: Annotated[str, typer.Argument()] = "all",
+    name: Annotated[
+        str,
+        typer.Option(help="Custom name for the generated Dockerfile or Image"),
+    ] = "",
+    path: Annotated[
+        str,
+        typer.Option(help="Directory to create or retrieve Dockerfiles."),
+    ] = "",
+    command: Annotated[
+        str,
+        typer.Option(help="Shell command to execute inside the container."),
+    ] = "",
     *,
-    clean: bool = False,
-    pretty: bool = False,
+    clean: Annotated[
+        bool,
+        typer.Option(help="Clean Docker resources after run (use --clean to enable)"),
+    ] = False,
+    pretty: Annotated[
+        bool,
+        typer.Option(help="Show output in Pretty format (use --pretty to enable)"),
+    ] = False,
 ) -> None:
-    """
-    Generate, build, and run Docker resources from a base image or config list.
+    """Generate, build, and run Docker resources from a base image or config list."""
+    os_name = os_name.lower().strip()
 
-    OS_NAME base Docker image to initialize from (e.g., 'ubuntu:20.04').
-        (default: all).
-
-    """
-    if not os_name.strip():
-        raise click.UsageError("The 'os-name' option cannot be empty.")
+    if not os_name:
+        raise ValueError("The 'os-name' option cannot be empty.")
 
     if not name:
         name = re.sub(r"[^a-zA-Z0-9]", "", os_name)
 
     if not re.fullmatch(r"[a-zA-Z0-9]+", name):
-        raise click.BadParameter(
+        raise typer.BadParameter(
             f"Invalid name '{name}'. Must contain only letters and digits",
             param_hint="--name",
         )
@@ -68,10 +51,14 @@ def run_cli(  # noqa: PLR0913
     if not path:
         path = str(_utils.get_cwd())
 
-    if os_name.lower() == "all":
+    if os_name == "all":
         cfg_list = _utils.load_config()
-        out = app.run_config(path, cfg_list, clean=clean)
+        out = app.run_config(path, cfg_list, command, clean=clean)
     else:
         out = app.test_container(os_name, name, path, command, clean=clean)
 
-    click.echo(_utils.format_json(out, pretty=pretty))
+    rich.print(out) if pretty else typer.echo(out)
+
+
+def run_cli():
+    typer.run(main)
