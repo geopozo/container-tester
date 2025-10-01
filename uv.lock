@@ -89,7 +89,6 @@ wheels = [
 name = "container-tester"
 source = { editable = "." }
 dependencies = [
-    { name = "click" },
     { name = "docker" },
     { name = "typer" },
 ]
@@ -102,7 +101,6 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "click", specifier = ">=8.1.8" },
     { name = "docker", specifier = ">=7.1.0" },
     { name = "typer", specifier = ">=0.19.2" },
 ]
