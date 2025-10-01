@@ -309,8 +309,8 @@ def run_container(
             "name": name,
             "container_id": container.id,
             "command": config.get("Cmd"),
-            "stdout": stdout_logs,
-            "stderr": stderr_logs,
+            "stdout": stdout_logs.strip(),
+            "stderr": stderr_logs.strip(),
         }
 
 

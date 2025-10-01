@@ -28,6 +28,10 @@ def main(  # noqa: PLR0913
         bool,
         typer.Option(help="Clean Docker resources after run (use --clean to enable)"),
     ] = False,
+    json: Annotated[
+        bool,
+        typer.Option(help="Show output in json format (use --json to enable)"),
+    ] = False,
     pretty: Annotated[
         bool,
         typer.Option(help="Show output in Pretty format (use --pretty to enable)"),
@@ -57,7 +61,11 @@ def main(  # noqa: PLR0913
     else:
         out = app.test_container(os_name, name, path, command, clean=clean)
 
-    rich.print(out) if pretty else typer.echo(out)
+    if json:
+        out = _utils.format_json(out)
+        rich.print_json(out, highlight=pretty)
+    else:
+        rich.print(out) if pretty else typer.echo(out)
 
 
 def run_cli():
