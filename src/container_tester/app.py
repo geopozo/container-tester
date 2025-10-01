@@ -31,7 +31,7 @@ class DockerConfig(TypedDict):
 
     image_tag: str
     os_name: str
-    commands: list[str]
+    os_commands: list[str]
     pkg_manager: str
 
 
@@ -49,7 +49,7 @@ def docker_client() -> DockerClient:
         return client
 
 
-def _dockerfile_template(os_name: str, commands: list[str]) -> str:
+def _dockerfile_template(os_name: str, os_commands: list[str]) -> str:
     has_py = Path("pyproject.toml").exists()
     has_lock = Path("uv.lock").exists()
     dependencies = []
@@ -58,7 +58,7 @@ def _dockerfile_template(os_name: str, commands: list[str]) -> str:
     if has_lock:
         dependencies.append("COPY uv.lock /app/uv.lock")
     deps = "\n".join(dependencies) if dependencies else "# no pyproject/lock detected"
-    cmds = "\n".join(f"RUN {cmd}" for cmd in commands) if commands else ""
+    cmds = "\n".join(f"RUN {cmd}" for cmd in os_commands) if os_commands else ""
     sync_cmd = "uv sync --locked" if has_lock else "uv sync"
     return f"""\
 FROM {os_name}
@@ -71,7 +71,7 @@ WORKDIR /app
 ENV UV_LINK_MODE=copy
 ADD . /app
 
-RUN {sync_cmd}
+#RUN {sync_cmd}
 {cmds}
 """
 
@@ -172,7 +172,7 @@ def generate_dockerfile(
     os_name: str,
     image_tag: str,
     path: str,
-    commands: list[str],
+    os_commands: list[str],
 ) -> dict[str, Any] | None:
     """
     Generate a Dockerfile for the given OS and name at the specified path.
@@ -183,7 +183,7 @@ def generate_dockerfile(
         os_name (str): Base OS for the Dockerfile.
         image_tag (str): Identifier used in the Dockerfile name.
         path (str): Directory to save the Dockerfile.
-        commands (list[str]): List of shell commands to include in the Dockerfile.
+        os_commands (list[str]): List of shell commands to include in the Dockerfile.
 
     """
     image = _image_exists(client, os_name)
@@ -191,7 +191,7 @@ def generate_dockerfile(
     try:
         dir_path = _utils.resolve_dir_path(path, mkdir=True)
         df_name = f"Dockerfile.{image_tag}"
-        content = _dockerfile_template(os_name, commands)
+        content = _dockerfile_template(os_name, os_commands)
         (dir_path / df_name).write_text(content)
     except (OSError, TypeError, ValueError) as e:
         click.secho(
@@ -378,7 +378,7 @@ def run_config(
             )
             os_name = cfg["os_name"]
             image_tag = cfg["image_tag"]
-            commands = cfg["commands"]
+            os_commands = cfg["os_commands"]
             test_command = 'echo "Container is running"'
 
             docker_info = {
@@ -387,7 +387,7 @@ def run_config(
                     os_name,
                     image_tag,
                     path,
-                    commands,
+                    os_commands,
                 ),
                 "image": build_image(client, image_tag, path),
                 "container": run_container(
