@@ -59,8 +59,8 @@ def resolve_dir_path(
 
 def load_config() -> list[Any]:
     file_name = "docker-config.toml"
-    default_path = Path(f"src/container_tester/{file_name}").resolve()
     user_path = Path(file_name).expanduser()
+    default_path = Path(__file__).parent / file_name
 
     config_path = user_path if user_path.is_file() else default_path
 
