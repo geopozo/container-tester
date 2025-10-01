@@ -16,7 +16,7 @@ from container_tester import _utils, app
 )
 @click.option(
     "--path",
-    default=".",
+    default="",
     help="Directory to create or retrieve Dockerfiles. (default: current)",
 )
 @click.option(
@@ -64,6 +64,9 @@ def run_cli(  # noqa: PLR0913
             f"Invalid name '{name}'. Must contain only letters and digits",
             param_hint="--name",
         )
+
+    if not path:
+        path = str(_utils.get_cwd())
 
     if os_name.lower() == "all":
         cfg_list = _utils.load_config()
