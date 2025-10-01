@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import sys
 import tomllib as toml
 from pathlib import Path
@@ -14,6 +16,21 @@ class AutoEncoder(json.JSONEncoder):
         if hasattr(o, "__json__"):
             return o.__json__()
         return super().default(o)
+
+
+def get_cwd() -> Path | None:
+    git_path = shutil.which("git")
+
+    if not git_path:
+        return None
+
+    r = subprocess.run(  # noqa: S603
+        [git_path, "rev-parse", "--show-toplevel"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return Path() if r.returncode else Path(r.stdout.strip())
 
 
 def resolve_dir_path(
