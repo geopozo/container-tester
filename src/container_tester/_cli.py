@@ -66,5 +66,5 @@ def main(  # noqa: PLR0913
         rich.print(out) if pretty else typer.echo(out)
 
 
-def run_cli():
+def run_cli() -> None:
     typer.run(main)

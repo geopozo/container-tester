@@ -79,7 +79,6 @@ def remove_dockerfile(image_tag: str, path: str) -> None:
     Args:
         image_tag (str): Tag used to identify the Dockerfile.
         path (str): Directory to search for the Dockerfile.
-            Defaults to current directory.
 
     """
     df_name = f"Dockerfile.{image_tag}"
@@ -94,12 +93,12 @@ def remove_dockerfile(image_tag: str, path: str) -> None:
 
 def remove_image(client: DockerClient, image_tag: str) -> None:
     """
-    Remove a Docker image by image-tag, showing status messages.
+    Remove a Docker image by image-tag.
 
     Args:
         client (DockerClient): Docker SDK client instance used to
             perform the build.
-        image_tag (str): Tag of the image to remove.
+        image_tag (str): Tag used to identify the docker image to remove.
 
     """
     try:
@@ -112,7 +111,7 @@ def remove_image(client: DockerClient, image_tag: str) -> None:
 
 def remove_container(client: DockerClient, container_id: str) -> None:
     """
-    Remove a Docker container by container-name.
+    Remove a Docker container by container_id.
 
     Args:
         client (DockerClient): Docker SDK client instance used to
@@ -169,7 +168,7 @@ def generate_dockerfile(
     image_tag: str,
     path: str,
     os_commands: list[str],
-) -> dict[str, Any] | None:
+) -> dict[str, Any]:
     """
     Generate a Dockerfile for the given OS and name at the specified path.
 
@@ -180,6 +179,10 @@ def generate_dockerfile(
         image_tag (str): Identifier used in the Dockerfile name.
         path (str): Directory to save the Dockerfile.
         os_commands (list[str]): List of shell commands to include in the Dockerfile.
+
+    Returns:
+        A dictionary with the keys 'name', 'full_path', and 'os_name'.
+        If the operation fails, returns a dictionary with the key 'stderr'.
 
     """
     image = _image_exists(client, os_name)
@@ -210,7 +213,7 @@ def build_image(
     path: str,
     *,
     clean: bool = False,
-) -> dict[str, Any] | None:
+) -> dict[str, Any]:
     """
     Build a Docker image from a tagged Dockerfile and optionally remove it after build.
 
@@ -221,6 +224,10 @@ def build_image(
         path (str): Directory containing the Dockerfile.
         clean (bool, optional): If True, remove the image after building.
             Defaults to False.
+
+    Returns:
+        A dictionary with the keys 'name', 'os', 'size' and 'labels'.
+        If the operation fails, returns a dictionary with the key 'stderr'.
 
     """
     try:
@@ -263,7 +270,7 @@ def run_container(
     command: str,
     *,
     clean: bool = False,
-) -> dict[str, Any] | None:
+) -> dict[str, Any]:
     """
     Run a container from a Docker image with the given command.
 
@@ -274,6 +281,11 @@ def run_container(
         command (str): Command to execute inside the container.
         clean (bool, optional): If True, remove the container after execution.
             Defaults to False.
+
+    Returns:
+        A dictionary with the keys 'name', 'container_id', 'command',
+            'stdout' and 'stderr'.
+            If the operation fails, returns a dictionary with the key 'stderr'.
 
     """
     try:
@@ -315,7 +327,7 @@ def test_container(
     command: str,
     *,
     clean: bool = False,
-) -> list[dict[str, Any]] | None:
+) -> list[dict[str, Any]]:
     """
     Generate, build, and run a container from provided arguments.
 
@@ -325,6 +337,10 @@ def test_container(
         path (str): Directory to store the Dockerfile.
         command (str): Command to execute in the container.
         clean (bool): If True, remove generated artifacts after execution.
+
+    Returns:
+        A list of dictionaries with the keys 'dockerfile', 'image', 'container'.
+            If the operation fails, returns a empty list'.
 
     """
     client = docker_client()
@@ -342,7 +358,7 @@ def test_container(
             remove_dangling(client)
     except (ImageNotFound, BuildError, Exception) as e:
         typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
-        return None
+        return []
     else:
         return [docker_info]
 
@@ -363,6 +379,10 @@ def run_config(
         command (str): Command to execute in the container.
         clean (bool, optional): If True, remove generated files and images
             after execution.
+
+    Returns:
+        A list of dictionaries with the keys 'dockerfile', 'image', 'container'.
+            If the operation fails, returns a empty list'.
 
     """
     client = docker_client()
@@ -405,6 +425,6 @@ def run_config(
 
     except (APIError, Exception) as e:
         typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
-        return None
+        return []
     else:
         return info_list
