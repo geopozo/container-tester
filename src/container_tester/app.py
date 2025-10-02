@@ -82,9 +82,9 @@ def remove_dockerfile(image_tag: str, path: str) -> None:
             Defaults to current directory.
 
     """
+    df_name = f"Dockerfile.{image_tag}"
     try:
         dir_path = _utils.resolve_dir_path(path)
-        df_name = f"Dockerfile.{image_tag}"
         (dir_path / df_name).unlink()
     except DockerException as e:
         typer.secho(f"Failed to remove '{df_name}': {e}", fg=typer.colors.RED, err=True)
