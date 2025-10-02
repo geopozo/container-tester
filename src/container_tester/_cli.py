@@ -6,14 +6,12 @@ import typer
 
 from container_tester import _utils, app
 
-# ruff: noqa: T201 allow print in CLI
-
 
 def main(  # noqa: PLR0913
     os_name: Annotated[str, typer.Argument()] = "all",
     name: Annotated[
         str,
-        typer.Option(help="Custom name for the generated Dockerfile or Image"),
+        typer.Option(help="Custom name for the generated Dockerfile"),
     ] = "",
     path: Annotated[
         str,
