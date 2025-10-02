@@ -19,7 +19,7 @@ def main(  # noqa: PLR0913
     ] = "",
     command: Annotated[
         str,
-        typer.Option(help="Shell command to execute inside the container."),
+        typer.Option(help="Shell command to execute inside the containers."),
     ] = "",
     *,
     clean: Annotated[
@@ -32,10 +32,10 @@ def main(  # noqa: PLR0913
     ] = False,
     pretty: Annotated[
         bool,
-        typer.Option(help="Show output in Pretty format (use --pretty to enable)"),
+        typer.Option(help="Show output in pretty format (use --pretty to enable)"),
     ] = False,
 ) -> None:
-    """Generate, build, and run Docker resources from a base image or config list."""
+    """Generate, build, and run Docker resources from a base image or config file."""
     os_name = os_name.lower().strip()
 
     if not os_name:
