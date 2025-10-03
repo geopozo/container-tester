@@ -62,9 +62,9 @@ Usage: contest [OPTIONS] [OS_NAME]
 
 Generate, build, and run Docker resources from a base image or config file.
 
-╭─ Arguments ───────────────────────────────────────╮
-│ os_name      [OS_NAME]  [default: all]            |
-╰───────────────────────────────────────────────────╯
+╭─ Arguments ────────────────────────────────────────────────────────────────────╮
+│ os_name      [OS_NAME]  [default: all]                                         |
+╰────────────────────────────────────────────────────────────────────────────────╯
 
 ╭─ Options ──────────────────────────────────────────────────────────────────────╮
 │ --name                 TEXT  Custom name for the generated Dockerfile.         │
