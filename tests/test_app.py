@@ -1,0 +1,27 @@
+from unittest.mock import MagicMock
+
+import pytest
+from docker import DockerClient
+
+from container_tester import app
+
+IMAGE_TAG = "test_image"
+
+
+@pytest.fixture
+def mock_client():
+    client = MagicMock(spec=DockerClient)
+    client.containers.list.return_value = []
+    client.images.list.return_value = []
+    return client
+
+
+class TestApp:
+    def test_docker_client_returns_instance(self, mock_client):
+        assert isinstance(mock_client, DockerClient)
+        assert mock_client.containers.list() == []
+
+    def test_docker_client_raises_exception_if_docker_not_running(self):
+        with pytest.raises(SystemExit) as e:
+            app.docker_client()
+        assert e.value.code == 1
