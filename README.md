@@ -82,6 +82,47 @@ Generate, build, and run Docker resources from a base image or config file.
 
 </div>
 
+## Custom Docker Configuration
+
+You can define your own `docker-config.toml` file to run custom Docker images tailored to your needs. Use the following format to specify multiple profiles:
+
+```toml
+[docker_configs]
+
+[[docker_configs.profile]]
+image_tag = "alpine_latest"
+os_name = "alpine:latest"
+os_commands = []
+pkg_manager = "apk"
+
+[[docker_configs.profile]]
+image_tag = "fedora_latest"
+os_name = "fedora:latest"
+os_commands = []
+pkg_manager = "dnf"
+
+# Add more profiles as needed...
+```
+
+### Configuration Fields
+
+- `image_tag`: A unique identifier for the Docker image profile.
+- `os_name`: The name and tag of the Docker image to use.
+- `os_commands`: A list of shell commands to run after container startup (optional).
+- `pkg_manager`: The package manager used by the OS (e.g., apk, dnf, apt).
+
+### Run with Your Custom Config
+
+After creating your `docker-config.toml` file, launch your custom Docker setup by running:
+
+<div class="termy">
+
+```console
+uv run contest
+```
+
+</div>
+
 ## License
 
 This project is licensed under the terms of the MIT license.
