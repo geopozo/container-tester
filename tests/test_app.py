@@ -25,3 +25,11 @@ class TestApp:
         with pytest.raises(SystemExit) as e:
             app.docker_client()
         assert e.value.code == 1
+
+    def test_remove_dockerfile_removes_file(self, tmp_path):
+        docker_file = tmp_path / f"Dockerfile.{IMAGE_TAG}"
+        docker_file.write_text("content")
+
+        app.remove_dockerfile(IMAGE_TAG, str(tmp_path))
+
+        assert not docker_file.exists()
