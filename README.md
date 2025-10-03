@@ -25,19 +25,26 @@ You can use Container-Tester in two ways:
 
 1. Install in your project:
 
-```sh
+<div class="termy">
+
+```console
 uv add container-tester
 ```
+
+</div>
 
 After installation, verify that it’s working by running:
 
 <div class="termy">
-```sh
+
+```console
 uv run contest --help
 ```
+
 </div>
 
 2. From source using uvx (recommended for latest version):
+
 <div class="termy">
 
 ```console
