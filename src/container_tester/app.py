@@ -339,7 +339,7 @@ def test_container(
         clean (bool): If True, remove generated artifacts after execution.
 
     Returns:
-        A list of dictionaries with the keys 'dockerfile', 'image', 'container'.
+        A list of dictionaries with the keys 'dockerfile', 'image' and 'container'.
             If the operation fails, returns a empty list'.
 
     """
