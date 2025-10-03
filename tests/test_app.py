@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from docker import DockerClient
+from docker.errors import ImageNotFound
 
 from container_tester import app
 
@@ -33,3 +34,11 @@ class TestApp:
         app.remove_dockerfile(IMAGE_TAG, str(tmp_path))
 
         assert not docker_file.exists()
+
+    def test_remove_image_handles_image_not_found(self, mock_client, capsys):
+        mock_client.images.remove.side_effect = ImageNotFound("not found")
+
+        app.remove_image(mock_client, IMAGE_TAG)
+
+        captured = capsys.readouterr()
+        assert f"Image '{IMAGE_TAG}' not found" in captured.out
