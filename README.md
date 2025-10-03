@@ -81,3 +81,7 @@ Generate, build, and run Docker resources from a base image or config file.
 ```
 
 </div>
+
+## License
+
+This project is licensed under the terms of the MIT license.
