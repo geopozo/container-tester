@@ -194,7 +194,7 @@ def generate_dockerfile(
         (dir_path / df_name).write_text(content)
     except (OSError, TypeError, ValueError) as e:
         typer.secho(
-            f"{type(e).__name__}:\nFailed to generate Dockerfile: {e}",
+            f"Failed to generate Dockerfile: {e}",
             fg=typer.colors.RED,
             err=True,
         )
