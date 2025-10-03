@@ -31,15 +31,20 @@ uv add container-tester
 
 After installation, verify that it’s working by running:
 
+<div class="termy">
 ```sh
 uv run contest --help
 ```
+</div>
 
 2. From source using uvx (recommended for latest version):
+<div class="termy">
 
-```sh
+```console
 uvx --from git+https://github.com/geopozo/container-tester contest --help
 ```
+
+</div>
 
 ## Using Container-tester
 
