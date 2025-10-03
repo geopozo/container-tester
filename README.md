@@ -66,15 +66,18 @@ Generate, build, and run Docker resources from a base image or config file.
 │ os_name      [OS_NAME]  [default: all]            |
 ╰───────────────────────────────────────────────────╯
 
-╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────╮
-│ --name TEXT Custom name for the generated Dockerfile                                              │
-│ --path TEXT Directory to create or retrieve Dockerfiles.                                          │
-│ --command TEXT Shell command to execute inside the containers.                                    │
-│ --clean --no-clean Clean Docker resources after run (use --clean to enable) [default: no-clean]   │
-│ --json --no-json Show output in json format (use --json to enable) [default: no-json]             │
-│ --pretty --no-pretty Show output in pretty format (use --pretty to enable) [default: no-pretty]   │
-│ --help Show this message and exit.                                                                │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ──────────────────────────────────────────────────────────────────────╮
+│ --name                 TEXT  Custom name for the generated Dockerfile.         │
+│ --path                 TEXT  Directory to create or retrieve Dockerfiles.      │
+│ --command              TEXT  Shell command to execute inside the containers.   │
+│ --clean   --no-clean         Clean Docker resources after run                  │
+│                              (use --clean to enable) [default: no-clean]       │
+│ --json    --no-json          Show output in json format                        │
+│                              (use --json to enable) [default: no-json]         │
+│ --pretty  --no-pretty        Show output in pretty format                      │
+│                              (use --pretty to enable) [default: no-pretty]     │
+│ --help                       Show this message and exit.                       │
+╰────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 </div>
