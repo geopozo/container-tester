@@ -137,7 +137,7 @@ def remove_container(client: DockerClient, container_id: str) -> None:
         typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
 
 
-def remove_dangling(client: DockerClient) -> None:
+def _remove_dangling(client: DockerClient) -> None:
     """
     Remove dangling Docker images to free up space.
 
@@ -355,7 +355,7 @@ def test_container(
         if clean:
             remove_dockerfile(name, path)
             remove_image(client, name)
-            remove_dangling(client)
+            _remove_dangling(client)
     except (ImageNotFound, BuildError, Exception) as e:
         typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
         return []
@@ -419,7 +419,7 @@ def run_config(
                 remove_dockerfile(image_tag, path)
                 remove_image(client, image_tag)
                 remove_image(client, os_name)
-                remove_dangling(client)
+                _remove_dangling(client)
 
             info_list.append(docker_info)
 
