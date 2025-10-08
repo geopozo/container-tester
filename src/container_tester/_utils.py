@@ -34,6 +34,8 @@ def get_cwd() -> Path | None:
     )
     return Path() if r.returncode else Path(r.stdout.strip())
 
+    # Path()? Path().cwd() - como sabemos donde se ejecuta el comando
+
 
 def resolve_dir_path(
     path: str,
@@ -65,11 +67,12 @@ def load_config() -> list[Any]:
     default_path = Path(__file__).parent / file_name
 
     config_path = user_path if user_path.is_file() else default_path
+    # este es raro
 
     try:
         with config_path.open("rb") as f:
             data = toml.load(f)
-            config_list = data.get("docker_configs", {}).get("profile", [])
+            config_list = data.get("docker_configs", {}).get("profile", []) # hay otros config?
     except toml.TOMLDecodeError as e:
         typer.echo(f"Error parsing TOML from {config_path}: {e}", err=True)
     except OSError as e:

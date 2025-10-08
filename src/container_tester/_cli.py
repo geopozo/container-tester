@@ -6,9 +6,16 @@ import typer
 
 from container_tester import _utils, app
 
+# esta estructura es raro me parece
+# main son las banderas universales?
 
+# no amo todo lo que dockerfiles. Esto no es una capa encima?
+# usa platformsdirs user_cache_dir
+# como se marca json y pretty como exclusivos? o no son
+# muchos usuarios solo quieren la salida normal, stdout a stdout, stderr a stderr
+# clean quita todo? hay manera de permitir que sigue corriendo el docker despues?
 def main(  # noqa: PLR0913
-    os_name: Annotated[str, typer.Argument()] = "all",
+    os_name: Annotated[str, typer.Argument()] = "all", # help?
     name: Annotated[
         str,
         typer.Option(help="Custom name for the generated Dockerfile"),
@@ -67,4 +74,4 @@ def main(  # noqa: PLR0913
 
 
 def run_cli() -> None:
-    typer.run(main)
+    typer.run(main) #

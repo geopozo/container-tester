@@ -1,0 +1,4 @@
+- Organiza los archivos (logo.png en docs/media)
+- De los comandos unos me parecen "API nivel alta: porcelana" y otros "plomeria"
+  pero no quede claro caules son cuales. Me parece bien poner porcelana en `__init__.py`
+  pero `plomeria` tras de `from container-tester import app`

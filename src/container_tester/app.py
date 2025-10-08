@@ -54,7 +54,7 @@ def docker_client() -> DockerClient:
 def _dockerfile_template(os_name: str, os_commands: list[str]) -> str:
     has_py = Path("pyproject.toml").exists()
     dependencies = []
-    if has_py:
+    if has_py: # tenemos que hacerlo separado? no esta incluido con lo de git
         dependencies.append("COPY pyproject.toml /app/pyproject.toml")
     deps = "\n".join(dependencies) if dependencies else "# no pyproject detected"
     cmds = "\n".join(f"RUN {cmd}" for cmd in os_commands) if os_commands else ""
@@ -107,6 +107,7 @@ def remove_image(client: DockerClient, image_tag: str) -> None:
         typer.secho(f"Image '{image_tag}' not found.", fg=typer.colors.RED)
     except (APIError, DockerException) as e:
         typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+        # por que no raise en este caso?
 
 
 def remove_container(client: DockerClient, container_id: str) -> None:
@@ -152,7 +153,7 @@ def remove_dangling(client: DockerClient) -> None:
         pass
 
 
-def _image_exists(client: DockerClient, image_tag: str) -> DockerImage:
+def _image_exists(client: DockerClient, image_tag: str) -> DockerImage: # no es get_image?
     try:
         image = client.images.pull(image_tag)
     except (APIError, ImageNotFound, Exception) as e:
@@ -171,7 +172,7 @@ def generate_dockerfile(
 ) -> dict[str, Any]:
     """
     Generate a Dockerfile for the given OS and name at the specified path.
-
+
     Args:
         client (DockerClient): Docker SDK client instance used to
             perform the build.
@@ -212,7 +213,7 @@ def build_image(
     image_tag: str,
     path: str,
     *,
-    clean: bool = False,
+    clean: bool = False, # que es el punto
 ) -> dict[str, Any]:
     """
     Build a Docker image from a tagged Dockerfile and optionally remove it after build.
@@ -246,7 +247,7 @@ def build_image(
     except (APIError, TypeError) as e:
         typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
         return {"stderr": f"{type(e).__name__}:\n{e}"}
-    else:
+    else: # los dos errors return, esto no es necesario
         size = image.attrs.get("Size", "") / (1024 * 1024)
         config = image.attrs.get("Config", {})
 
@@ -264,7 +265,7 @@ def build_image(
         }
 
 
-def run_container(
+def run_container( # este me parece la api principal
     client: DockerClient,
     image_tag: str,
     command: str,
@@ -363,7 +364,7 @@ def test_container(
         return [docker_info]
 
 
-def run_config(
+def run_config( #esto es arriba pero de mucho
     path: str,
     config_list: list[DockerConfig],
     command: str,
