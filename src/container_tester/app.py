@@ -144,7 +144,7 @@ def _remove_dangling(client: DockerClient) -> None:
         pass
 
 
-def _image_exists(client: DockerClient, image_tag: str) -> DockerImage:
+def _get_image(client: DockerClient, image_tag: str) -> DockerImage:
     try:
         image = client.images.pull(image_tag)
     except (APIError, ImageNotFound, Exception) as e:
@@ -177,7 +177,7 @@ def generate_dockerfile(
         If the operation fails, returns a dictionary with the key 'stderr'.
 
     """
-    image = _image_exists(client, os_name)
+    image = _get_image(client, os_name)
 
     try:
         dir_path = _utils.resolve_dir_path(path, mkdir=True)
