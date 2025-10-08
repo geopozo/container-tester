@@ -19,8 +19,6 @@ from docker.errors import (
 
 from container_tester import _utils
 
-# ruff: noqa: T201 allow print in CLI
-
 if TYPE_CHECKING:
     from docker import DockerClient
     from docker.models.containers import Container as DockerContainer
