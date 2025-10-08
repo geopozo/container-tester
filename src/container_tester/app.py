@@ -232,13 +232,6 @@ def build_image(
             rm=True,
             forcerm=True,
         )
-    except BuildError as e:
-        typer.secho(e.msg, fg=typer.colors.RED, err=True)
-        return {"stderr": f"{type(e).__name__}:\n{e.msg}"}
-    except (APIError, TypeError) as e:
-        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
-        return {"stderr": f"{type(e).__name__}:\n{e}"}
-    else:
         size = image.attrs.get("Size", "") / (1024 * 1024)
         config = image.attrs.get("Config", {})
 
@@ -254,6 +247,12 @@ def build_image(
             "size": f"{size:.2f} MB",
             "labels": config.get("Labels"),
         }
+    except BuildError as e:
+        typer.secho(e.msg, fg=typer.colors.RED, err=True)
+        return {"stderr": f"{type(e).__name__}:\n{e.msg}"}
+    except (APIError, TypeError) as e:
+        typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+        return {"stderr": f"{type(e).__name__}:\n{e}"}
 
 
 def run_container(
