@@ -1,78 +1,78 @@
-[docker_configs]
+[docker_config]
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "py312_trixie"
 os_name = "python:3.12-slim-trixie"
 os_commands = []
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "py311_slim"
 os_name = "python:3.11-slim"
 os_commands = []
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "py310_slim"
 os_name = "python:3.10-slim"
 os_commands = []
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "debian_bookworm"
 os_name = "debian:bookworm-slim"
 os_commands = ["apt-get update && apt-get install -y ca-certificates"]
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "debian_bullseye"
 os_name = "debian:bullseye-slim"
 os_commands = ["apt-get update && apt-get install -y ca-certificates"]
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "ubuntu_latest"
 os_name = "ubuntu:latest"
 os_commands = ["apt-get update && apt-get install -y ca-certificates"]
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "ubuntu_20"
 os_name = "ubuntu:20.04"
 os_commands = ["apt-get update && apt-get install -y ca-certificates"]
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "ubuntu_22"
 os_name = "ubuntu:22.04"
 os_commands = []
 pkg_manager = "apt"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "fedora_latest"
 os_name = "fedora:latest"
 os_commands = []
 pkg_manager = "dnf"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "alpine_latest"
 os_name = "alpine:latest"
 os_commands = []
 pkg_manager = "apk"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "alpine_3_18"
 os_name = "alpine:3.19"
 os_commands = []
 pkg_manager = "apk"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "alpine_3_18"
 os_name = "alpine:3.18"
 os_commands = []
 pkg_manager = "apk"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "alpine_3_17"
 os_name = "alpine:3.17"
 os_commands = []

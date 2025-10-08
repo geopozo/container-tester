@@ -69,7 +69,7 @@ def load_config() -> list[Any]:
     try:
         with config_path.open("rb") as f:
             data = toml.load(f)
-            config_list = data.get("docker_configs", {}).get("profile", [])
+            config_list = data.get("docker_config", {}).get("profile", [])
     except toml.TOMLDecodeError as e:
         typer.echo(f"Error parsing TOML from {config_path}: {e}", err=True)
     except OSError as e:

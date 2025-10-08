@@ -87,15 +87,15 @@ Generate, build, and run Docker resources from a base image or config file.
 You can define your own `docker-config.toml` file to run custom Docker images tailored to your needs. Use the following format to specify multiple profiles:
 
 ```toml
-[docker_configs]
+[docker_config]
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "alpine_latest"
 os_name = "alpine:latest"
 os_commands = []
 pkg_manager = "apk"
 
-[[docker_configs.profile]]
+[[docker_config.profile]]
 image_tag = "fedora_latest"
 os_name = "fedora:latest"
 os_commands = []
