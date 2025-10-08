@@ -8,14 +8,21 @@ from container_tester import _utils, app
 
 
 def main(  # noqa: PLR0913
-    os_name: Annotated[str, typer.Argument()] = "all",
+    os_name: Annotated[
+        str,
+        typer.Argument(
+            help="Base Docker image to initialize from (e.g., 'ubuntu:20.04').",
+        ),
+    ] = "all",
     name: Annotated[
         str,
         typer.Option(help="Custom name for the generated Dockerfile"),
     ] = "",
     path: Annotated[
         str,
-        typer.Option(help="Directory to create or retrieve Dockerfiles."),
+        typer.Option(
+            help="Directory to create or retrieve Dockerfiles. (default: all).",
+        ),
     ] = "",
     command: Annotated[
         str,
