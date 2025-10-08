@@ -3,7 +3,7 @@
 <h1 align="center">
 	<img
         height="250"
-		alt="narwhals_small"
+		alt="container_small"
 		src="./logo.png">
 </h1>
 
