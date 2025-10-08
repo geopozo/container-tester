@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import sys
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypedDict
 
 import docker
@@ -52,19 +51,12 @@ def docker_client() -> DockerClient:
 
 
 def _dockerfile_template(os_name: str, os_commands: list[str]) -> str:
-    has_py = Path("pyproject.toml").exists()
-    dependencies = []
-    if has_py:
-        dependencies.append("COPY pyproject.toml /app/pyproject.toml")
-    deps = "\n".join(dependencies) if dependencies else "# no pyproject detected"
     cmds = "\n".join(f"RUN {cmd}" for cmd in os_commands) if os_commands else ""
     return f"""\
 FROM {os_name}
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
-
-{deps}
 
 ADD . /app
 
