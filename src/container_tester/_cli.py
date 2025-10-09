@@ -7,6 +7,15 @@ import typer
 from container_tester import _utils, app
 
 
+def _print_table(data: app.DockerInfo | None, *, pretty: bool = False) -> None:
+    if not data:
+        typer.echo("No data.")
+        return
+    rich.print(_utils.to_table("dockerfile", data.get("dockerfile"), pretty=pretty))
+    rich.print(_utils.to_table("image", data.get("image"), pretty=pretty))
+    rich.print(_utils.to_table("container", data.get("container"), pretty=pretty))
+
+
 def main(  # noqa: PLR0913
     os_name: Annotated[
         str,
@@ -66,8 +75,12 @@ def main(  # noqa: PLR0913
     if json:
         out = _utils.format_json(out)
         rich.print_json(out, highlight=pretty)
+    elif isinstance(out, list):
+        for v in out:
+            _print_table(v, pretty=pretty)
+            typer.echo("\n")
     else:
-        rich.print(out) if pretty else typer.echo(out)
+        _print_table(out, pretty=pretty)
 
 
 def run_cli() -> None:
