@@ -270,3 +270,22 @@ class DockerBackend:
                 fg=typer.colors.RED,
                 err=True,
             )
+
+    def remove_image(self, image_tag: str = "") -> None:
+        """
+        Remove a Docker image by image-tag.
+
+        Args:
+            image_tag (str): Tag used to identify the docker image to remove.
+
+        Raises:
+            DockerException: If the image removal fails due to an API error or
+                other Docker-related exception.
+
+        """
+        try:
+            self.client.images.remove(image=image_tag, force=True)
+        except ImageNotFound:
+            typer.secho(f"Image '{image_tag}' not found.", fg=typer.colors.RED)
+        except (APIError, DockerException) as e:
+            raise DockerException("Failed to remove Docker image.") from e
