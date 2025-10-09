@@ -40,18 +40,25 @@ class DockerBackend:
         else:
             return verified_name
 
-    def _get_template(self, os_commands: list[str]) -> str:
+    def _get_template(self, os_commands: list[str] | None) -> str:
         uv_copy = "COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/"
         cmds = "\n".join(f"RUN {cmd}" for cmd in os_commands) if os_commands else ""
 
         return f"FROM {self.os_name}\n{uv_copy}\nWORKDIR /app\nADD . /app\n{cmds}"
 
-    def generate(self, path: str, os_commands: list[str]) -> dict[str, Any]:
+    def generate(
+        self,
+        path: str,
+        *,
+        image_tag: str = "",
+        os_commands: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Generate a Dockerfile at the specified path.
 
         Args:
             path (str): Directory to save the Dockerfile.
+            image_tag (str): Identifier used in the Dockerfile name.
             os_commands (list[str]): List of shell commands to include in the
                 Dockerfile.
 
@@ -66,7 +73,7 @@ class DockerBackend:
                 TypeError, or ValueError.
 
         """
-        suffix_file_name = re.sub(r"[^a-zA-Z0-9]", "", self.os_name)
+        suffix_file_name = image_tag if image_tag else self._get_tag_name(self.os_name)
 
         try:
             dir_path = _utils.resolve_dir_path(path, mkdir=True)
