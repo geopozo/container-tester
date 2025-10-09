@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import re
 import sys
+import time
 from typing import TYPE_CHECKING, Any
 
 import typer
-from docker.errors import APIError, BuildError, ImageNotFound
+from docker.errors import APIError, BuildError, ContainerError, ImageNotFound, NotFound
 
 from container_tester import _utils
 
 if TYPE_CHECKING:
     from docker import DockerClient
+    from docker.models.containers import Container as DockerContainer
 
 
 class DockerBackend:
@@ -141,5 +143,91 @@ class DockerBackend:
             typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
             sys.exit(1)
 
-    def run(self):
-        """Run a container from a Docker image with the given command."""
+    def remove_container(self, container_id: str) -> None:
+        """
+        Remove a Docker container by container_id.
+
+        Args:
+            container_id (str): Container name or ID to remove.
+
+        """
+        try:
+            containers: list[DockerContainer] = self.client.containers.list(all=True)
+
+            for container in containers:
+                if container_id in (container.name, container.id):
+                    container.stop()
+                    container.remove(force=True)
+                    break
+        except NotFound:
+            typer.secho(
+                f"Container '{container_id}' not found.",
+                fg=typer.colors.YELLOW,
+                err=True,
+            )
+        except APIError as e:
+            typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+
+    def run(
+        self,
+        image_tag: str = "",
+        command: str = "",
+        *,
+        clean: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Run a container from a Docker image with the given command.
+
+        Args:
+            image_tag (str): Tag of the image to run.
+            command (str): Command to execute inside the container.
+            clean (bool, optional): If True, remove the container after execution.
+                Defaults to False.
+
+        Returns:
+            dict: A dictionary with the following keys:
+                - 'id': ID of the generated container.
+                - 'name': Name assigned to the container.
+                - 'command': Command executed inside the container.
+                - 'stdout': Standard output from the container execution.
+                - 'stderr': Standard error from the container execution.
+
+        Raises:
+            SystemExit: If the Docker build fails due to an ContainerError,
+                ImageNotFound, or APIError.
+
+        """
+        image_tag = image_tag or self._get_tag_name(self.os_name)
+        command = command or 'echo "Container is running"'
+        timestamp = int(time.time())
+        container_name = f"container_test_{image_tag}_{timestamp}"
+
+        try:
+            container = self.client.containers.run(
+                image_tag,
+                command=command,
+                name=container_name,
+                detach=True,
+                stdout=True,
+                stderr=True,
+            )
+            container.wait()
+
+            stdout_logs = container.logs(stdout=True, stderr=False).decode()
+            stderr_logs = container.logs(stdout=False, stderr=True).decode()
+            config = container.attrs.get("Config", {})
+
+            if clean:
+                self.remove_container(container_name)
+
+            return {
+                "id": container.id,
+                "name": container_name,
+                "command": config.get("Cmd"),
+                "stdout": stdout_logs.strip(),
+                "stderr": stderr_logs.strip(),
+            }
+
+        except (ContainerError, ImageNotFound, APIError) as e:
+            typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+            sys.exit(1)
