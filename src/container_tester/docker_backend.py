@@ -7,6 +7,7 @@ import sys
 import time
 from typing import TYPE_CHECKING, Any
 
+import docker
 import typer
 from docker.errors import (
     APIError,
@@ -32,8 +33,20 @@ class DockerBackend:
     def _get_tag_name(self, name: str) -> str:
         return re.sub(r"[^a-zA-Z0-9]", "", name)
 
+    def _docker_client(self) -> DockerClient:
+        """Return a ready Docker client."""
+        try:
+            return docker.from_env()
+        except DockerException:
+            typer.echo(
+                "Docker is not running. Please start the Docker daemon and try again.",
+                err=True,
+            )
+            sys.exit(1)
+
     def __init__(self, os_name: str) -> None:
         """Initialize the Docker backend client."""
+        self.client = self._docker_client()
         self.os_name = self._get_os_name(os_name)
 
     def _get_os_name(self, os_name: str) -> str:
