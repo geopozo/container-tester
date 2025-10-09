@@ -289,3 +289,10 @@ class DockerBackend:
             typer.secho(f"Image '{image_tag}' not found.", fg=typer.colors.RED)
         except (APIError, DockerException) as e:
             raise DockerException("Failed to remove Docker image.") from e
+
+    def remove_dangling(self) -> None:
+        """Remove dangling Docker images to free up space."""
+        try:
+            self.client.images.prune(filters={"dangling": True})
+        except DockerException:
+            typer.secho("Failed to remove dangling.", fg=typer.colors.YELLOW)
