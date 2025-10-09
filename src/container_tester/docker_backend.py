@@ -48,12 +48,19 @@ class DockerBackend:
         Generate a Dockerfile at the specified path.
 
         Args:
-        path (str): Directory to save the Dockerfile.
-        os_commands (list[str]): List of shell commands to include in the Dockerfile.
+            path (str): Directory to save the Dockerfile.
+            os_commands (list[str]): List of shell commands to include in the
+                Dockerfile.
 
         Returns:
-            A dictionary with the keys 'name', 'full_path', and 'os_name'.
-            If the operation fails, returns a dictionary with the key 'stderr'.
+            dict: A dictionary with the keys:
+                - 'name': Name of the generated Dockerfile.
+                - 'full_path': Full path to the generated Dockerfile.
+                - 'os_name': Name of the operating system used for the Dockerfile.
+
+        Raises:
+            SystemExit: If the Dockerfile generation fails due to an OSError,
+                TypeError, or ValueError.
 
         """
         suffix_file_name = re.sub(r"[^a-zA-Z0-9]", "", self.os_name)
