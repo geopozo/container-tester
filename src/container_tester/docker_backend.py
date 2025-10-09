@@ -296,6 +296,8 @@ class DockerBackend:
                 other Docker-related exception.
 
         """
+        image_tag = image_tag or self._get_tag_name(self.os_name)
+
         try:
             self.client.images.remove(image=image_tag, force=True)
         except ImageNotFound:
