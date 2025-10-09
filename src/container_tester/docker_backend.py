@@ -8,7 +8,14 @@ import time
 from typing import TYPE_CHECKING, Any
 
 import typer
-from docker.errors import APIError, BuildError, ContainerError, ImageNotFound, NotFound
+from docker.errors import (
+    APIError,
+    BuildError,
+    ContainerError,
+    DockerException,
+    ImageNotFound,
+    NotFound,
+)
 
 from container_tester import _utils
 
@@ -231,3 +238,35 @@ class DockerBackend:
         except (ContainerError, ImageNotFound, APIError) as e:
             typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
             sys.exit(1)
+
+    def remove_dockerfile(
+        self,
+        path: str,
+        image_tag: str = "",
+    ) -> None:
+        """
+        Remove a Dockerfile matching the image tag from the given path.
+
+        Args:
+            path (str): Directory to search for the Dockerfile.
+            image_tag (str): Tag used to identify the Dockerfile.
+
+        """
+        image_tag = image_tag or self._get_tag_name(self.os_name)
+        df_name = f"Dockerfile.{image_tag}"
+
+        try:
+            dir_path = _utils.resolve_dir_path(path)
+            (dir_path / df_name).unlink()
+        except DockerException as e:
+            typer.secho(
+                f"Failed to remove '{df_name}': {e}",
+                fg=typer.colors.RED,
+                err=True,
+            )
+        except (TypeError, FileNotFoundError) as e:
+            typer.secho(
+                f"{type(e).__name__}:\n{e}",
+                fg=typer.colors.RED,
+                err=True,
+            )
