@@ -7,10 +7,7 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 import typer
-from docker.errors import (
-    APIError,
-    ImageNotFound,
-)
+from docker.errors import APIError, BuildError, ImageNotFound
 
 from container_tester import _utils
 
@@ -94,8 +91,55 @@ class DockerBackend:
                 "os_name": self.os_name,
             }
 
-    def build(self):
-        """Build docker image and optionally remove a tagged Docker image."""
+    def build(self, path: str, image_tag: str = "") -> dict[str, Any]:
+        """
+        Build docker image and optionally remove a tagged Docker image.
+
+        Args:
+            path (str): Directory containing the Dockerfile.
+            image_tag (str): Tag for the resulting Docker image.
+
+        Returns:
+            dict: A dictionary with the following keys:
+                - 'name': Name of the image tag.
+                - 'os': Dictionary with OS metadata including:
+                    - 'architecture': CPU architecture of the image.
+                    - 'base': Base operating system of the image.
+                - 'size': Size of the image in megabytes, formatted as a string.
+
+        Raises:
+            SystemExit: If the Docker build fails due to an BuildError,
+                APIError, or TypeError.
+
+        """
+        image_tag = image_tag or self._get_tag_name(self.os_name)
+
+        try:
+            df_name = f"Dockerfile.{image_tag}"
+            dir_path = _utils.resolve_dir_path(path)
+            image, _ = self.client.images.build(
+                path=f"{dir_path!s}",
+                dockerfile=df_name,
+                tag=image_tag,
+                rm=True,
+                forcerm=True,
+            )
+            size = image.attrs.get("Size", "") / (1024 * 1024)
+
+            return {
+                "name": image_tag,
+                "os": {
+                    "architecture": image.attrs["Architecture"],
+                    "base": image.attrs["Os"],
+                },
+                "size": f"{size:.2f} MB",
+            }
+        except BuildError as e:
+            typer.secho(e.msg, fg=typer.colors.RED, err=True)
+            sys.exit(1)
+        except (APIError, TypeError) as e:
+            typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+            sys.exit(1)
 
     def run(self):
         """Run a container from a Docker image with the given command."""
