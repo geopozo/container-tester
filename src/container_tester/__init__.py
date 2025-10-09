@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 """Container Tester Module."""
 
-from container_tester.app import (
-    test_container,
-)
+from container_tester.app import run_config, test_container
 
-__all__ = ["test_container"]
+__all__ = ["run_config", "test_container"]
