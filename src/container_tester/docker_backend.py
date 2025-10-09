@@ -31,7 +31,7 @@ class DockerBackend:
     client: DockerClient
 
     def _get_tag_name(self, name: str) -> str:
-        return re.sub(r"[^a-zA-Z0-9]", "", name)
+        return re.sub(r"[^a-zA-Z0-9]", "_", name)
 
     def _docker_client(self) -> DockerClient:
         """Return a ready Docker client."""
@@ -52,7 +52,7 @@ class DockerBackend:
     def _get_os_name(self, os_name: str) -> str:
         try:
             image = self.client.images.pull(os_name)
-            verified_name = image.attrs.get("RepoTags", "")
+            verified_name = image.attrs.get("RepoTags", "")[0]
         except (APIError, ImageNotFound) as e:
             typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
             sys.exit(1)
