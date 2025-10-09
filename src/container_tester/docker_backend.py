@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import typer
 from docker.errors import (
@@ -23,7 +23,7 @@ class DockerBackend:
 
     client: DockerClient
 
-    def __init__(self, os_name: str):
+    def __init__(self, os_name: str) -> None:
         """Initialize the Docker backend client."""
         self.os_name = self._get_os_name(os_name)
 
@@ -43,7 +43,7 @@ class DockerBackend:
 
         return f"FROM {self.os_name}\n{uv_copy}\nWORKDIR /app\nADD . /app\n{cmds}"
 
-    def generate(self, path: str, os_commands: list[str]):
+    def generate(self, path: str, os_commands: list[str]) -> dict[str, Any]:
         """
         Generate a Dockerfile at the specified path.
 
