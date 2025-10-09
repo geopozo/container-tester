@@ -73,7 +73,7 @@ class DockerBackend:
                 TypeError, or ValueError.
 
         """
-        suffix_file_name = image_tag if image_tag else self._get_tag_name(self.os_name)
+        suffix_file_name = image_tag or self._get_tag_name(self.os_name)
 
         try:
             dir_path = _utils.resolve_dir_path(path, mkdir=True)
