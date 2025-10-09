@@ -23,6 +23,9 @@ class DockerBackend:
 
     client: DockerClient
 
+    def _get_tag_name(self, name: str) -> str:
+        return re.sub(r"[^a-zA-Z0-9]", "", name)
+
     def __init__(self, os_name: str) -> None:
         """Initialize the Docker backend client."""
         self.os_name = self._get_os_name(os_name)
