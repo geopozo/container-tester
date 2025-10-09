@@ -76,7 +76,7 @@ class DockerBackend:
                 fg=typer.colors.RED,
                 err=True,
             )
-            return {"stderr": f"{type(e).__name__}:\n{e}"}
+            sys.exit(1)
         else:
             return {
                 "name": df_name,
