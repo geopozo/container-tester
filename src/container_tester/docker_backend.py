@@ -160,7 +160,11 @@ class DockerBackend:
             typer.secho(e.msg, fg=typer.colors.RED, err=True)
             sys.exit(1)
         except (APIError, TypeError) as e:
-            typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+            typer.secho(
+                f"{type(e).__name__}:\n{e}",
+                fg=typer.colors.RED,
+                err=True,
+            )
             sys.exit(1)
 
     def remove_container(self, container_id: str) -> None:
@@ -186,7 +190,11 @@ class DockerBackend:
                 err=True,
             )
         except APIError as e:
-            typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+            typer.secho(
+                f"{type(e).__name__}:\n{e}",
+                fg=typer.colors.RED,
+                err=True,
+            )
 
     def run(
         self,
@@ -249,7 +257,11 @@ class DockerBackend:
             }
 
         except (ContainerError, ImageNotFound, APIError) as e:
-            typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+            typer.secho(
+                f"{type(e).__name__}:\n{e}",
+                fg=typer.colors.RED,
+                err=True,
+            )
             sys.exit(1)
 
     def remove_dockerfile(
@@ -301,7 +313,11 @@ class DockerBackend:
         try:
             self.client.images.remove(image=image_tag, force=True)
         except ImageNotFound:
-            typer.secho(f"Image '{image_tag}' not found.", fg=typer.colors.RED)
+            typer.secho(
+                f"Image '{image_tag}' not found.",
+                fg=typer.colors.RED,
+                err=True,
+            )
         except (APIError, DockerException) as e:
             raise DockerException("Failed to remove Docker image.") from e
 
@@ -310,4 +326,8 @@ class DockerBackend:
         try:
             self.client.images.prune(filters={"dangling": True})
         except DockerException:
-            typer.secho("Failed to remove dangling.", fg=typer.colors.YELLOW)
+            typer.secho(
+                "Failed to remove dangling.",
+                fg=typer.colors.YELLOW,
+                err=True,
+            )
