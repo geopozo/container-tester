@@ -49,12 +49,6 @@ os_commands = []
 pkg_manager = "apt"
 
 [[docker_config.profile]]
-image_tag = "fedora_latest"
-os_name = "fedora:latest"
-os_commands = []
-pkg_manager = "dnf"
-
-[[docker_config.profile]]
 image_tag = "alpine_latest"
 os_name = "alpine:latest"
 os_commands = []
