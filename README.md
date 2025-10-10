@@ -11,9 +11,9 @@
 
 Container-Tester is a small Python utility that helps you test your project on top of many different Linux distributions without having to run and maintain lots of Docker tests yourself. It provides a command-line interface (CLI) that can:
 
-- Build that Dockerfile into a Docker image and report its size and metadata.
+- Build that Dockerfile into a image and report its size and metadata.
 - Run a container from that image, execute a command inside it and capture the logs.
-- Optionally clean up Dockerfiles, images and containers when you are done.
+- Optionally clean up images and containers when you are done.
 - Iterate over a curated list of popular Python, Debian/Ubuntu, Fedora and Alpine base images defined in `docker-config.toml` and perform the above steps for each of them.
 
 Container-Tester uses the Docker SDK for Python to communicate with your local Docker daemon. If Docker is not running, it prints a helpful error message and exits. The tool emits machine-readable JSON describing every step so you can integrate it into other scripts or CI pipelines.
@@ -27,7 +27,7 @@ You can use Container-Tester in two ways:
 <div class="termy">
 
 ```console
-uv add container-tester
+uv add git+https://github.com/geopozo/container‑tester
 ```
 
 </div>
@@ -79,6 +79,44 @@ Generate, build, and run Docker resources from a base image or config file.
 ```
 
 </div>
+
+### Example
+
+Here is a quick example that runs a simple command across all default profiles and outputs a JSON report:
+
+<div class="termy">
+
+```console
+uv run contest --command "python --version" --json
+```
+
+</div>
+
+To test only on the Ubuntu image, you can specify its base image directly and use a custom command:
+
+<div class="termy">
+
+```console
+uv run contest ubuntu:latest --command "echo Hello, world!"
+```
+
+</div>
+
+When using `--json`, the tool returns structured data containing image metadata and container logs; with `--pretty` you get nicely format using `Rich`. Use `--clean` to remove images and containers once execution completes.
+
+## Default profiles
+
+By default, Container‑Tester comes with a handful of profiles covering common Python, Debian/Ubuntu and Alpine base images. Each profile defines an `image_tag` (used as the resulting image name) and the corresponding `os_name`. A few of them are shown below—see `src/container_tester/docker‑config.toml` for the full list:
+
+| image_tag       | os_name                 |
+| --------------- | ----------------------- |
+| py312_trixie    | python:3.12‑slim‑trixie |
+| py311_slim      | python:3.11‑slim        |
+| debian_bookworm | debian:bookworm‑slim    |
+| ubuntu_latest   | ubuntu:latest           |
+| alpine_latest   | alpine:latest           |
+
+These profiles demonstrate how you can test your project across different Python versions and distributions. You can add or override profiles in your own `docker‑config.toml`.
 
 ## Custom Docker Configuration
 
