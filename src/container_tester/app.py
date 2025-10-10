@@ -86,7 +86,6 @@ def run_config(
         os_name = cfg["os_name"]
         image_tag = cfg["image_tag"]
         os_commands = cfg["os_commands"]
-        command = command or 'echo "Container is running"'
 
         docker_info = test_container(
             os_name,
