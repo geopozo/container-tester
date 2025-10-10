@@ -25,10 +25,9 @@ class DockerInfo(TypedDict):
     container: dict[str, Any]
 
 
-def test_container(  # noqa: PLR0913
+def test_container(
     os_name: str,
     name: str,
-    path: str,
     command: str = "",
     os_commands: list[str] | None = None,
     *,
@@ -40,7 +39,6 @@ def test_container(  # noqa: PLR0913
     Args:
         os_name (str): Base OS for the Dockerfile.
         name (str): Identifier for the image and Dockerfile.
-        path (str): Directory to store the Dockerfile.
         command (str): Command to execute in the container.
         os_commands (list[str]): List of shell commands to include in the
                 Dockerfile.
@@ -50,7 +48,7 @@ def test_container(  # noqa: PLR0913
     docker_test = DockerBackend(os_name)
 
     docker_info = DockerInfo(
-        image=docker_test.build(path, name, os_commands),
+        image=docker_test.build(name, os_commands),
         container=docker_test.run(name, command, clean=clean),
     )
 
@@ -62,7 +60,6 @@ def test_container(  # noqa: PLR0913
 
 
 def run_config(
-    path: str,
     config_list: list[DockerConfig],
     command: str,
     *,
@@ -72,7 +69,6 @@ def run_config(
     Generate, build, and run containers from the default config list.
 
     Args:
-        path (str): Directory to store Dockerfiles.
         config_list (list[DockerConfig]): Docker image profiles to generate files from.
         command (str): Command to execute in the container.
         clean (bool, optional): If True, remove generated files and images
@@ -95,7 +91,6 @@ def run_config(
         docker_info = test_container(
             os_name,
             image_tag,
-            path,
             command,
             os_commands,
             clean=clean,

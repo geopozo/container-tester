@@ -68,7 +68,6 @@ class DockerBackend:
 
     def build(
         self,
-        path: str,
         image_tag: str = "",
         os_commands: list[str] | None = None,
     ) -> dict[str, Any]:
@@ -76,7 +75,6 @@ class DockerBackend:
         Build docker image and optionally remove a tagged Docker image.
 
         Args:
-            path (str): Directory containing the Dockerfile.
             image_tag (str): Tag for the resulting Docker image.
             os_commands (list[str]): List of shell commands to include in the
                 Dockerfile.
@@ -98,10 +96,9 @@ class DockerBackend:
         dockerfile = io.BytesIO(self._get_template(os_commands).encode("utf-8"))
 
         try:
-            dir_path = _utils.resolve_dir_path(path)
             image, _ = self.client.images.build(
                 fileobj=dockerfile,
-                path=str(dir_path),
+                path=str(_utils.get_cwd()),
                 tag=image_tag,
                 rm=True,
                 forcerm=True,

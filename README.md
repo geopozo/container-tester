@@ -68,7 +68,6 @@ Generate, build, and run Docker resources from a base image or config file.
 
 ╭─ Options ──────────────────────────────────────────────────────────────────────╮
 │ --name                 TEXT  Custom name for the generated Dockerfile.         │
-│ --path                 TEXT  Directory to create or retrieve Dockerfiles.      │
 │ --command              TEXT  Shell command to execute inside the containers.   │
 │ --clean   --no-clean         Clean Docker resources after run                  │
 │                              (use --clean to enable) [default: no-clean]       │

@@ -32,12 +32,6 @@ def main(  # noqa: PLR0913
         str,
         typer.Option(help="Custom name for the generated Dockerfile"),
     ] = "",
-    path: Annotated[
-        str,
-        typer.Option(
-            help="Directory to create or retrieve Dockerfiles.",
-        ),
-    ] = "",
     command: Annotated[
         str,
         typer.Option(help="Shell command to execute inside the containers."),
@@ -74,14 +68,11 @@ def main(  # noqa: PLR0913
             param_hint="--name",
         )
 
-    if not path:
-        path = str(_utils.get_cwd())
-
     if os_name == "all":
         cfg_list = _utils.load_config()
-        out = app.run_config(path, cfg_list, command, clean=clean)
+        out = app.run_config(cfg_list, command, clean=clean)
     else:
-        out = app.test_container(os_name, name, path, command, clean=clean)
+        out = app.test_container(os_name, name, command, clean=clean)
 
     if json:
         out = _utils.format_json(out)
