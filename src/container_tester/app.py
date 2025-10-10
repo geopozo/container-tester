@@ -21,7 +21,6 @@ class DockerConfig(TypedDict):
 class DockerInfo(TypedDict):
     """Type a docker info."""
 
-    dockerfile: dict[str, Any]
     image: dict[str, Any]
     container: dict[str, Any]
 
@@ -51,13 +50,11 @@ def test_container(  # noqa: PLR0913
     docker_test = DockerBackend(os_name)
 
     docker_info = DockerInfo(
-        dockerfile=docker_test.generate(path, image_tag=name, os_commands=os_commands),
-        image=docker_test.build(path, name),
+        image=docker_test.build(path, name, os_commands),
         container=docker_test.run(name, command, clean=clean),
     )
 
     if clean:
-        docker_test.remove_dockerfile(path, name)
         docker_test.remove_image(name)
         docker_test.remove_dangling()
 

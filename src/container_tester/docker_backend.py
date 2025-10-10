@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import re
 import sys
 import time
@@ -65,61 +66,20 @@ class DockerBackend:
 
         return f"FROM {self.os_name}\n{uv_copy}\nWORKDIR /app\nADD . /app\n{cmds}"
 
-    def generate(
+    def build(
         self,
         path: str,
-        *,
         image_tag: str = "",
         os_commands: list[str] | None = None,
     ) -> dict[str, Any]:
-        """
-        Generate a Dockerfile at the specified path.
-
-        Args:
-            path (str): Directory to save the Dockerfile.
-            image_tag (str): Identifier used in the Dockerfile name.
-            os_commands (list[str]): List of shell commands to include in the
-                Dockerfile.
-
-        Returns:
-            dict: A dictionary with the keys:
-                - 'name': Name of the generated Dockerfile.
-                - 'full_path': Full path to the generated Dockerfile.
-                - 'os_name': Name of the operating system used for the Dockerfile.
-
-        Raises:
-            SystemExit: If the Dockerfile generation fails due to an OSError,
-                TypeError, or ValueError.
-
-        """
-        suffix_file_name = image_tag or self._get_tag_name(self.os_name)
-
-        try:
-            dir_path = _utils.resolve_dir_path(path, mkdir=True)
-            df_name = f"Dockerfile.{suffix_file_name}"
-            content = self._get_template(os_commands)
-            (dir_path / df_name).write_text(content)
-        except (OSError, TypeError, ValueError) as e:
-            typer.secho(
-                f"Failed to generate Dockerfile: {e}",
-                fg=typer.colors.RED,
-                err=True,
-            )
-            sys.exit(1)
-        else:
-            return {
-                "name": df_name,
-                "full_path": (dir_path / df_name).as_posix(),
-                "os_name": self.os_name,
-            }
-
-    def build(self, path: str, image_tag: str = "") -> dict[str, Any]:
         """
         Build docker image and optionally remove a tagged Docker image.
 
         Args:
             path (str): Directory containing the Dockerfile.
             image_tag (str): Tag for the resulting Docker image.
+            os_commands (list[str]): List of shell commands to include in the
+                Dockerfile.
 
         Returns:
             dict: A dictionary with the following keys:
@@ -135,13 +95,13 @@ class DockerBackend:
 
         """
         image_tag = image_tag or self._get_tag_name(self.os_name)
+        dockerfile = io.BytesIO(self._get_template(os_commands).encode("utf-8"))
 
         try:
-            df_name = f"Dockerfile.{image_tag}"
             dir_path = _utils.resolve_dir_path(path)
             image, _ = self.client.images.build(
-                path=f"{dir_path!s}",
-                dockerfile=df_name,
+                fileobj=dockerfile,
+                path=str(dir_path),
                 tag=image_tag,
                 rm=True,
                 forcerm=True,
@@ -151,6 +111,7 @@ class DockerBackend:
             return {
                 "name": image_tag,
                 "os": {
+                    "name": self.os_name,
                     "architecture": image.attrs["Architecture"],
                     "base": image.attrs["Os"],
                 },
@@ -263,38 +224,6 @@ class DockerBackend:
                 err=True,
             )
             sys.exit(1)
-
-    def remove_dockerfile(
-        self,
-        path: str,
-        image_tag: str = "",
-    ) -> None:
-        """
-        Remove a Dockerfile matching the image tag from the given path.
-
-        Args:
-            path (str): Directory to search for the Dockerfile.
-            image_tag (str): Tag used to identify the Dockerfile.
-
-        """
-        image_tag = image_tag or self._get_tag_name(self.os_name)
-        df_name = f"Dockerfile.{image_tag}"
-
-        try:
-            dir_path = _utils.resolve_dir_path(path)
-            (dir_path / df_name).unlink()
-        except DockerException as e:
-            typer.secho(
-                f"Failed to remove '{df_name}': {e}",
-                fg=typer.colors.RED,
-                err=True,
-            )
-        except (TypeError, FileNotFoundError) as e:
-            typer.secho(
-                f"{type(e).__name__}:\n{e}",
-                fg=typer.colors.RED,
-                err=True,
-            )
 
     def remove_image(self, image_tag: str = "") -> None:
         """
