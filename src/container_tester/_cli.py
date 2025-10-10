@@ -33,7 +33,7 @@ def main(  # noqa: PLR0913
     path: Annotated[
         str,
         typer.Option(
-            help="Directory to create or retrieve Dockerfiles. (default: all).",
+            help="Directory to create or retrieve Dockerfiles.",
         ),
     ] = "",
     command: Annotated[
@@ -43,15 +43,15 @@ def main(  # noqa: PLR0913
     *,
     clean: Annotated[
         bool,
-        typer.Option(help="Clean Docker resources after run (use --clean to enable)"),
+        typer.Option(help="Clean Docker resources after run."),
     ] = False,
     json: Annotated[
         bool,
-        typer.Option(help="Show output in json format (use --json to enable)"),
+        typer.Option(help="Show output in json format."),
     ] = False,
     pretty: Annotated[
         bool,
-        typer.Option(help="Show output in pretty format (use --pretty to enable)"),
+        typer.Option(help="Show output in pretty format."),
     ] = False,
 ) -> None:
     """Generate, build, and run Docker resources from a base image or config file."""
