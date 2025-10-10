@@ -56,6 +56,12 @@ def main(  # noqa: PLR0913
     if not os_name:
         raise ValueError("The 'os-name' option cannot be empty.")
 
+    if name and os_name == "all":
+        raise typer.BadParameter(
+            f"Cannot use --name '{name}' without specifying os-name.",
+            param_hint="--name",
+        )
+
     if name and not re.fullmatch(r"[a-zA-Z0-9]+", name):
         raise typer.BadParameter(
             f"Invalid name '{name}'. Must contain only letters and digits",
