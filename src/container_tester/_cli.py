@@ -7,13 +7,12 @@ import typer
 from container_tester import _utils, app
 
 
-def _print_table(data: app.DockerInfo | None, *, pretty: bool = False) -> None:
+def _print_output(data: app.DockerInfo | None) -> None:
     if not data:
         typer.echo("No data.")
         return
-    rich.print(_utils.to_table("dockerfile", data.get("dockerfile"), pretty=pretty))
-    rich.print(_utils.to_table("image", data.get("image"), pretty=pretty))
-    rich.print(_utils.to_table("container", data.get("container"), pretty=pretty))
+    typer.echo(data.get("container").get("stdout", ""))
+    typer.echo("\n")
 
 
 def main(  # noqa: PLR0913
@@ -77,10 +76,9 @@ def main(  # noqa: PLR0913
         rich.print_json(out, highlight=pretty)
     elif isinstance(out, list):
         for v in out:
-            _print_table(v, pretty=pretty)
-            typer.echo("\n")
+            _print_output(v)
     else:
-        _print_table(out, pretty=pretty)
+        _print_output(out)
 
 
 def run_cli() -> None:
