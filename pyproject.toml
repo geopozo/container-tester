@@ -22,7 +22,10 @@ authors = [
   { name = "David Angarita", email = "davidangarita.sistemas@gmail.com" },
 ]
 maintainers = [{ name = "Andrew Pikul", email = "ajpikul@gmail.com" }]
-dependencies = ["docker>=7.1.0", "platformdirs>=4.5.0", "typer>=0.19.2"]
+dependencies = [
+    "docker>=7.1.0",
+ "typer>=0.19.2",
+]
 
 [dependency-groups]
 dev = ["pyright>=1.1.406", "types-docker>=7.1.0.20241229"]
