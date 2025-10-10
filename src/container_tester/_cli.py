@@ -12,9 +12,11 @@ def _print_output(data: app.DockerInfo | None) -> None:
         typer.echo("No data.")
         return
 
+    test_name = data.get("image").get("name", "")
     stdout = data.get("container").get("stdout", "")
     stderr = data.get("container").get("stderr", "")
 
+    typer.echo(f"{test_name}:") if stdout else None
     typer.echo(stdout) if stdout else None
     typer.echo(stderr, err=True) if stderr else None
 
