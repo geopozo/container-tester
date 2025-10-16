@@ -7,18 +7,13 @@ import typer
 from container_tester import _utils, app
 
 
-def _print_output(data: app.DockerInfo | None) -> None:
-    if not data:
-        typer.echo("No data.")
-        return
-
+def _print_output(data: app.DockerInfo) -> None:
     test_name = data.get("image").get("name", "")
     stdout = data.get("container").get("stdout", "")
     stderr = data.get("container").get("stderr", "")
 
-    typer.echo(f"\n{test_name}:") if stdout else None
-    typer.echo(stdout) if stdout else None
-    typer.echo(stderr, err=True) if stderr else None
+    typer.echo(f"\n{test_name}:\n{stdout}")
+    typer.echo(stderr, err=True)
 
 
 def main(  # noqa: PLR0913
@@ -70,18 +65,22 @@ def main(  # noqa: PLR0913
 
     if os_name == "all":
         cfg_list = _utils.load_config()
-        out = app.run_config(cfg_list, command, clean=clean)
+        data = app.run_config(cfg_list, command, clean=clean)
     else:
-        out = app.test_container(os_name, name, command, clean=clean)
+        data = app.test_container(os_name, name, command, clean=clean)
+
+    if not data:
+        typer.echo("No data.")
+        return
 
     if json:
-        out = _utils.format_json(out)
-        rich.print_json(out, highlight=pretty)
-    elif isinstance(out, list):
-        for v in out:
+        data = _utils.format_json(data)
+        rich.print_json(data, highlight=pretty)
+    elif isinstance(data, list):
+        for v in data:
             _print_output(v)
     else:
-        _print_output(out)
+        _print_output(data)
 
 
 def run_cli() -> None:
