@@ -244,14 +244,8 @@ class DockerBackend:
 
         try:
             self.client.images.remove(image=image_tag, force=True)
-        except ImageNotFound:
-            typer.secho(
-                f"Image '{image_tag}' not found.",
-                fg=typer.colors.RED,
-                err=True,
-            )
-        except (APIError, DockerException) as e:
-            raise DockerException("Failed to remove Docker image.") from e
+        except (APIError, DockerException, ImageNotFound) as e:
+            raise DockerException(f"Failed to remove Docker image.\n{e}") from e
 
     def remove_dangling(self) -> None:
         """Remove dangling Docker images to free up space."""
