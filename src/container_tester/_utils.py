@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 import tomllib as toml
 from pathlib import Path
 from typing import Any
@@ -47,12 +48,12 @@ def load_config() -> list[Any]:
             config_list = data.get("docker_config", {}).get("profile", [])
     except toml.TOMLDecodeError as e:
         typer.echo(f"Error parsing TOML from {config_path}: {e}", err=True)
+        sys.exit(1)
     except OSError as e:
         typer.echo(f"Error reading config file {config_path}: {e}", err=True)
+        sys.exit(1)
     else:
         return config_list
-
-    return []
 
 
 def format_json(data: Any, *, pretty: bool = False) -> str:
