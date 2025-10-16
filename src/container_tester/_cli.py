@@ -8,12 +8,14 @@ from container_tester import _utils, app
 
 
 def _print_output(data: app.DockerInfo) -> None:
-    test_name = data.get("image").get("name", "")
-    stdout = data.get("container").get("stdout", "")
-    stderr = data.get("container").get("stderr", "")
+    test_name = data.get("image", {}).get("name", "")
+    stdout = data.get("container", {}).get("stdout", "")
+    stderr = data.get("container", {}).get("stderr", "")
 
-    typer.echo(f"\n{test_name}:\n{stdout}")
-    typer.echo(stderr, err=True)
+    typer.echo(f"\nTest {test_name}:\n{stdout}")
+
+    if stderr:
+        typer.echo(stderr, err=True)
 
 
 def main(  # noqa: PLR0913
