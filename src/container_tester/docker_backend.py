@@ -128,12 +128,10 @@ class DockerBackend:
                 },
                 "size": f"{size:.2f} MB",
             }
-        except BuildError as e:
-            typer.secho(e.msg, fg=typer.colors.RED, err=True)
-            sys.exit(1)
-        except (APIError, TypeError) as e:
+        except (BuildError, APIError, TypeError) as e:
+            error_msg = getattr(e, "msg", str(e))
             typer.secho(
-                f"{type(e).__name__}:\n{e}",
+                f"Failed to build Docker image '{image_tag}'.\n{error_msg}",
                 fg=typer.colors.RED,
                 err=True,
             )
