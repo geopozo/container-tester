@@ -153,15 +153,9 @@ class DockerBackend:
                     container.stop()
                     container.remove(force=True)
                     break
-        except NotFound:
+        except (NotFound, APIError) as e:
             typer.secho(
-                f"Container '{container_id}' not found.",
-                fg=typer.colors.YELLOW,
-                err=True,
-            )
-        except APIError as e:
-            typer.secho(
-                f"{type(e).__name__}:\n{e}",
+                f"Failed to remove container '{container_id}'.\n{e}",
                 fg=typer.colors.RED,
                 err=True,
             )
