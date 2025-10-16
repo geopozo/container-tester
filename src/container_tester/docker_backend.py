@@ -222,7 +222,7 @@ class DockerBackend:
 
         except (ContainerError, ImageNotFound, APIError) as e:
             typer.secho(
-                f"{type(e).__name__}:\n{e}",
+                f"Failed to run container from image '{image_tag}'.\n{e}",
                 fg=typer.colors.RED,
                 err=True,
             )
