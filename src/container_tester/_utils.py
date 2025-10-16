@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
-import sys
 import tomllib as toml
 from pathlib import Path
 from typing import Any
@@ -34,30 +33,6 @@ def get_cwd() -> Path | None:
         check=False,
     )
     return Path() if r.returncode else Path(r.stdout.strip())
-
-
-def resolve_dir_path(
-    path: str,
-    *,
-    mkdir: bool = False,
-) -> Path:
-    try:
-        dir_path = Path(path).expanduser()
-
-        if not dir_path.is_absolute():
-            dir_path = dir_path.resolve()
-
-        if dir_path.is_dir():
-            return dir_path
-
-        if mkdir:
-            dir_path.mkdir(parents=True, exist_ok=True)
-
-    except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
-        typer.echo(f"{type(e).__name__}:\n{e}", err=True)
-        sys.exit(1)
-    else:
-        return dir_path
 
 
 def load_config() -> list[Any]:
