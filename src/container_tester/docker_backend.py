@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import io
 import re
 import sys
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import docker
@@ -18,6 +18,7 @@ from docker.errors import (
     ImageNotFound,
     NotFound,
 )
+from platformdirs import user_cache_dir
 
 from container_tester import _utils
 
@@ -45,39 +46,51 @@ class DockerBackend:
             )
             sys.exit(1)
 
-    def __init__(self, os_name: str) -> None:
+    def __init__(self, os_name: str, os_commands: list[str] | None) -> None:
         """Initialize the Docker backend client."""
         self.client = self._docker_client()
         self.os_name = self._get_os_name(os_name)
+        self.os_commands = os_commands or []
 
     def _get_os_name(self, os_name: str) -> str:
         try:
             image = self.client.images.pull(os_name)
             verified_name = image.attrs.get("RepoTags", "")[0]
         except (APIError, ImageNotFound) as e:
-            typer.secho(f"{type(e).__name__}:\n{e}", fg=typer.colors.RED, err=True)
+            typer.secho(
+                f"Failed to retrieve image '{os_name}'.\n{e}",
+                fg=typer.colors.RED,
+                err=True,
+            )
             sys.exit(1)
         else:
             return verified_name
 
-    def _get_template(self, os_commands: list[str] | None) -> str:
+    def _get_template(self) -> str:
         uv_copy = "COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/"
-        cmds = "\n".join(f"RUN {cmd}" for cmd in os_commands) if os_commands else ""
+        cmds = (
+            "\n".join(f"RUN {cmd}" for cmd in self.os_commands)
+            if self.os_commands
+            else ""
+        )
 
-        return f"FROM {self.os_name}\n{uv_copy}\nWORKDIR /app\nADD . /app\n{cmds}"
+        return f"FROM {self.os_name}\n{uv_copy}\nWORKDIR /app\nCOPY . /app\n{cmds}"
 
-    def build(
-        self,
-        image_tag: str = "",
-        os_commands: list[str] | None = None,
-    ) -> dict[str, Any]:
+    def _generate_file(self, content: str) -> Path:
+        temp_dir = Path(user_cache_dir("container_tester"))
+        temp_dir.mkdir(parents=True, exist_ok=True)
+
+        file = temp_dir / "Dockerfile"
+        file.write_text(content, encoding="utf-8")
+
+        return file
+
+    def build(self, image_tag: str = "") -> dict[str, Any]:
         """
         Build docker image and optionally remove a tagged Docker image.
 
         Args:
             image_tag (str): Tag for the resulting Docker image.
-            os_commands (list[str]): List of shell commands to include in the
-                Dockerfile.
 
         Returns:
             dict: A dictionary with the following keys:
@@ -93,12 +106,13 @@ class DockerBackend:
 
         """
         image_tag = image_tag or self._get_tag_name(self.os_name)
-        dockerfile = io.BytesIO(self._get_template(os_commands).encode("utf-8"))
+        content = self._get_template()
+        dockerfile = self._generate_file(content)
 
         try:
             image, _ = self.client.images.build(
-                fileobj=dockerfile,
                 path=str(_utils.get_cwd()),
+                dockerfile=str(dockerfile),
                 tag=image_tag,
                 rm=True,
                 forcerm=True,
