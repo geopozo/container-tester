@@ -46,7 +46,7 @@ class DockerBackend:
             )
             sys.exit(1)
 
-    def __init__(self, os_name: str, os_commands: list[str] | None) -> None:
+    def __init__(self, os_name: str, os_commands: list[str] | None = None) -> None:
         """Initialize the Docker backend client."""
         self.client = self._docker_client()
         self.os_name = self._get_os_name(os_name)

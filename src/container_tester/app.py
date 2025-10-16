@@ -45,10 +45,10 @@ def test_container(
         clean (bool): If True, remove generated artifacts after execution.
 
     """
-    docker_test = DockerBackend(os_name)
+    docker_test = DockerBackend(os_name, os_commands)
 
     docker_info = DockerInfo(
-        image=docker_test.build(name, os_commands),
+        image=docker_test.build(name),
         container=docker_test.run(name, command, clean=clean),
     )
 
