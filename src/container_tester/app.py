@@ -12,17 +12,10 @@ from container_tester.docker_backend import DockerBackend
 class DockerConfig(TypedDict):
     """Type a docker config."""
 
-    image_tag: str
+    command: str
     os_name: str
     os_commands: list[str]
     pkg_manager: str
-
-
-class DockerInfo(TypedDict):
-    """Type a docker info."""
-
-    image: dict[str, Any]
-    container: dict[str, Any]
 
 
 def test_container(
@@ -32,7 +25,7 @@ def test_container(
     os_commands: list[str] | None = None,
     *,
     clean: bool = False,
-) -> DockerInfo:
+) -> dict[str, Any]:
     """
     Generate, build, and run a container from provided arguments.
 
@@ -47,49 +40,46 @@ def test_container(
     """
     docker_test = DockerBackend(os_name, os_commands)
 
-    docker_info = DockerInfo(
-        image=docker_test.build(name),
-        container=docker_test.run(name, command, clean=clean),
-    )
+    typer.echo(f"{typer.style('Test', fg=typer.colors.GREEN)}: {os_name}")
+
+    docker_test.build(name)
+    container = docker_test.run(name, command)
 
     if clean:
         docker_test.remove_image(name)
+        docker_test.remove_container(container.get("id", ""))
         docker_test.remove_dangling()
 
-    return docker_info
+    return container
 
 
 def run_config(
-    config_list: list[DockerConfig],
-    command: str,
+    config_list: dict[str, DockerConfig],
     *,
     clean: bool = False,
-) -> list[DockerInfo] | None:
+) -> list[dict[str, Any]]:
     """
     Generate, build, and run containers from the default config list.
 
     Args:
-        config_list (list[DockerConfig]): Docker image profiles to generate files from.
-        command (str): Command to execute in the container.
+        config_list (dict[str, DockerConfig]): Docker image profiles to generate
+            files from.
         clean (bool, optional): If True, remove generated files and images
             after execution.
-
-    Returns:
-        A list of DockerInfo.
 
     """
     info_list = []
 
     typer.echo(f"Container Tests: {len(config_list)}")
-    for i, cfg in enumerate(config_list):
-        typer.secho(f"Test: {i + 1}/{len(config_list)}")
+
+    for tag, cfg in config_list.items():
         os_name = cfg["os_name"]
-        image_tag = cfg["image_tag"]
+        command = cfg["command"]
         os_commands = cfg["os_commands"]
 
         docker_info = test_container(
             os_name,
-            image_tag,
+            tag,
             command,
             os_commands,
             clean=clean,

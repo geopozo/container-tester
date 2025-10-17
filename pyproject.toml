@@ -32,7 +32,7 @@ dependencies = [
 dev = ["pyright>=1.1.406", "types-docker>=7.1.0.20241229"]
 
 [project.scripts]
-contest = "container_tester._cli:run_cli"
+contest = "container_tester._cli:cli"
 
 
 [tool.ruff.lint]

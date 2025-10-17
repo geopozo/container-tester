@@ -10,8 +10,6 @@ from typing import Any
 
 import typer
 
-# ruff: noqa: T201 allow print in CLI
-
 
 class AutoEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
@@ -35,7 +33,7 @@ def get_cwd() -> Path | None:
     return Path() if r.returncode else Path(r.stdout.strip())
 
 
-def load_config() -> list[Any]:
+def load_config() -> dict[str, Any]:
     file_name = "docker-config.toml"
     user_path = Path(file_name).expanduser()
     default_path = Path(__file__).parent / file_name
@@ -44,16 +42,13 @@ def load_config() -> list[Any]:
 
     try:
         with config_path.open("rb") as f:
-            data = toml.load(f)
-            config_list = data.get("docker_config", {}).get("profile", [])
+            return toml.load(f)
     except toml.TOMLDecodeError as e:
         typer.echo(f"Error parsing TOML from {config_path}: {e}", err=True)
         sys.exit(1)
     except OSError as e:
         typer.echo(f"Error reading config file {config_path}: {e}", err=True)
         sys.exit(1)
-    else:
-        return config_list
 
 
 def format_json(data: Any, *, pretty: bool = False) -> str:

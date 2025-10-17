@@ -92,14 +92,6 @@ class DockerBackend:
         Args:
             image_tag (str): Tag for the resulting Docker image.
 
-        Returns:
-            dict: A dictionary with the following keys:
-                - 'name': Name of the image tag.
-                - 'os': Dictionary with OS metadata including:
-                    - 'architecture': CPU architecture of the image.
-                    - 'base': Base operating system of the image.
-                - 'size': Size of the image in megabytes, formatted as a string.
-
         Raises:
             SystemExit: If the Docker build fails due to an BuildError,
                 APIError, or TypeError.
@@ -114,8 +106,8 @@ class DockerBackend:
                 path=str(_utils.get_cwd()),
                 dockerfile=str(dockerfile),
                 tag=image_tag,
-                rm=True,
-                forcerm=True,
+                rm=True,  # Necessary to remove intermediate containers.
+                forcerm=True,  # Necessary to remove intermediate containers.
             )
             size = image.attrs.get("Size", "") / (1024 * 1024)
 
@@ -160,29 +152,13 @@ class DockerBackend:
                 err=True,
             )
 
-    def run(
-        self,
-        image_tag: str = "",
-        command: str = "",
-        *,
-        clean: bool = False,
-    ) -> dict[str, Any]:
+    def run(self, image_tag: str = "", command: str = "") -> dict[str, Any]:
         """
         Run a container from a Docker image with the given command.
 
         Args:
             image_tag (str): Tag of the image to run.
             command (str): Command to execute inside the container.
-            clean (bool, optional): If True, remove the container after execution.
-                Defaults to False.
-
-        Returns:
-            dict: A dictionary with the following keys:
-                - 'id': ID of the generated container.
-                - 'name': Name assigned to the container.
-                - 'command': Command executed inside the container.
-                - 'stdout': Standard output from the container execution.
-                - 'stderr': Standard error from the container execution.
 
         Raises:
             SystemExit: If the Docker build fails due to an ContainerError,
@@ -208,9 +184,6 @@ class DockerBackend:
             stdout_logs = container.logs(stdout=True, stderr=False).decode()
             stderr_logs = container.logs(stdout=False, stderr=True).decode()
             config = container.attrs.get("Config", {})
-
-            if clean:
-                self.remove_container(container_name)
 
             return {
                 "id": container.id,
