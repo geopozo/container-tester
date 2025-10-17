@@ -2,20 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import TYPE_CHECKING, Any
 
 import typer
 
 from container_tester.docker_backend import DockerBackend
 
-
-class DockerConfig(TypedDict):
-    """Type a docker config."""
-
-    command: str
-    os_name: str
-    os_commands: list[str]
-    pkg_manager: str
+if TYPE_CHECKING:
+    from container_tester._utils import DockerConfig
 
 
 def test_container(

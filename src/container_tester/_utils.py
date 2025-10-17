@@ -6,7 +6,7 @@ import subprocess
 import sys
 import tomllib as toml
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import typer
 
@@ -16,6 +16,15 @@ class AutoEncoder(json.JSONEncoder):
         if hasattr(o, "__json__"):
             return o.__json__()
         return super().default(o)
+
+
+class DockerConfig(TypedDict):
+    """Type a docker config."""
+
+    command: str
+    os_name: str
+    os_commands: list[str]
+    pkg_manager: str
 
 
 def get_cwd() -> Path | None:
@@ -33,7 +42,7 @@ def get_cwd() -> Path | None:
     return Path() if r.returncode else Path(r.stdout.strip())
 
 
-def load_config() -> dict[str, Any]:
+def load_config() -> dict[str, DockerConfig]:
     file_name = "docker-config.toml"
     user_path = Path(file_name).expanduser()
     default_path = Path(__file__).parent / file_name
