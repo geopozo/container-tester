@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: MIT
 """Container Tester Module."""
 
 from container_tester.app import run_config, test_container
