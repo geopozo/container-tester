@@ -11,19 +11,26 @@ flags = {"json": False, "pretty": False, "clean": False}
 
 
 def _print_output(data: dict[str, Any]) -> None:
-    if flags["json"]:
-        data_json = _utils.format_json(data)
-        rich.print_json(data_json, highlight=flags["pretty"])
+    if not data:
+        typer.echo("No data.")
         return
 
-    stdout = data.get("stdout", "")
-    stderr = data.get("stderr", "")
+    pretty = flags["pretty"]
 
-    if stdout:
-        typer.echo(stdout)
+    if flags["json"]:
+        data_json = _utils.format_json(data)
+        rich.print_json(data_json, highlight=pretty)
+    elif pretty:
+        rich.print(_utils.format_table("container", data, pretty=pretty))
+    else:
+        stdout = data.get("stdout", "")
+        stderr = data.get("stderr", "")
 
-    if stderr:
-        typer.echo(stderr, err=True)
+        if stdout:
+            typer.echo(stdout)
+
+        if stderr:
+            typer.echo(stderr, err=True)
 
 
 @cli.command()

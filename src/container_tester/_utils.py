@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 import typer
+from rich.table import Table, box
 
 
 class AutoEncoder(json.JSONEncoder):
@@ -62,3 +63,18 @@ def load_config() -> dict[str, DockerConfig]:
 
 def format_json(data: Any, *, pretty: bool = False) -> str:
     return json.dumps(data, indent=2 if pretty else None, cls=AutoEncoder)
+
+
+def format_table(title: str, data: dict[str, Any], *, pretty: bool = False) -> Table:
+    table = Table(
+        title=title if pretty else f"{title}:",
+        box=box.HEAVY_HEAD if pretty else None,
+        title_justify="center" if pretty else "left",
+    )
+    table.add_column("key", style="cyan" if pretty else None, no_wrap=True)
+    table.add_column("value", style="magenta" if pretty else None)
+
+    for key, value in data.items():
+        table.add_row(str(key), str(value))
+
+    return table
