@@ -59,21 +59,23 @@ Usage: contest [OPTIONS] [OS_NAME]
 
 Generate, build, and run Docker resources from a base image or config file.
 
-╭─ Arguments ────────────────────────────────────────────────────────────────────╮
-│ os_name      [OS_NAME]  [default: all]                                         |
-╰────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────────────────────╮
+│ --json    --no-json          Show output in json format                       │
+│                              (use --json to enable) [default: no-json]        │
+│ --pretty  --no-pretty        Show output in pretty format                     │
+│                              (use --pretty to enable) [default: no-pretty]    │
+│ --clean   --no-clean         Clean Docker resources after run                 │
+│                              (use --clean to enable) [default: no-clean]      │
+│ --install-completion         Install completion for the current shell.        │
+│ --show-completion            Show completion for the current shell, to copy   │
+│                              it or customize the installation.                │
+│ --help                       Show this message and exit.                      │
+╰───────────────────────────────────────────────────────────────────────────────╯
 
-╭─ Options ──────────────────────────────────────────────────────────────────────╮
-│ --name                 TEXT  Custom name for the generated Dockerfile.         │
-│ --command              TEXT  Shell command to execute inside the containers.   │
-│ --clean   --no-clean         Clean Docker resources after run                  │
-│                              (use --clean to enable) [default: no-clean]       │
-│ --json    --no-json          Show output in json format                        │
-│                              (use --json to enable) [default: no-json]         │
-│ --pretty  --no-pretty        Show output in pretty format                      │
-│                              (use --pretty to enable) [default: no-pretty]     │
-│ --help                       Show this message and exit.                       │
-╰────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────────────────────╮
+│ test-config      Generate, build, and run Docker resources from a docker      |
+│ test-container   Generate, build, and run Docker resources from a base image. |
+╰───────────────────────────────────────────────────────────────────────────────╯
 ```
 
 </div>
@@ -115,25 +117,24 @@ By default, Container‑Tester comes with a handful of profiles covering common 
 You can define your own `docker-config.toml` file to run custom Docker images tailored to your needs. Use the following format to specify multiple profiles:
 
 ```toml
-[docker_config]
-
-[[docker_config.profile]]
-image_tag = "alpine_latest"
-os_name = "alpine:latest"
+[py311_slim]
+command = ""
+os_name = "python:3.11-slim"
 os_commands = []
-pkg_manager = "apk"
+pkg_manager = "apt"
 
-[[docker_config.profile]]
-image_tag = "fedora_latest"
-os_name = "fedora:latest"
-os_commands = []
-pkg_manager = "dnf"
+[ubuntu_latest]
+command = ""
+os_name = "ubuntu:latest"
+os_commands = ["apt-get update && apt-get install -y ca-certificates"]
+pkg_manager = "apt"
 
 # Add more profiles as needed...
 ```
 
 ### Configuration Fields
 
+- `command`: Shell command to execute inside the containers.
 - `image_tag`: A unique identifier for the Docker image profile.
 - `os_name`: The name and tag of the Docker image to use.
 - `os_commands`: A list of shell commands to run after container startup (optional).
