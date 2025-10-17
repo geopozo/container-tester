@@ -12,13 +12,6 @@ import typer
 from rich.table import Table, box
 
 
-class AutoEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
-        if hasattr(o, "__json__"):
-            return o.__json__()
-        return super().default(o)
-
-
 class DockerConfig(TypedDict):
     """Type a docker config."""
 
@@ -62,7 +55,7 @@ def load_config() -> dict[str, DockerConfig]:
 
 
 def format_json(data: Any, *, pretty: bool = False) -> str:
-    return json.dumps(data, indent=2 if pretty else None, cls=AutoEncoder)
+    return json.dumps(data, indent=2 if pretty else None)
 
 
 def format_table(title: str, data: dict[str, Any], *, pretty: bool = False) -> Table:
