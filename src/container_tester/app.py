@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import typer
 
@@ -51,7 +51,7 @@ def run_config(
     config_list: dict[str, DockerConfig],
     *,
     clean: bool = False,
-) -> list[dict[str, Any]]:
+) -> list[DockerContainerInfo]:
     """
     Generate, build, and run containers from the default config list.
 

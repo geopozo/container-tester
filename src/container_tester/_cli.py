@@ -1,7 +1,6 @@
 import re
-from typing import Annotated, Any
+from typing import Annotated
 
-import rich
 import typer
 
 from container_tester import _utils, app
@@ -10,37 +9,18 @@ cli = typer.Typer()
 flags = {"json": False, "pretty": False, "clean": False}
 
 
-def _print_output(data: dict[str, Any]) -> None:
-    if not data:
-        typer.echo("No data.")
-        return
-
-    pretty = flags["pretty"]
-
-    if flags["json"]:
-        data_json = _utils.format_json(data)
-        rich.print_json(data_json, highlight=pretty)
-    elif pretty:
-        rich.print(_utils.format_table("container", data, pretty=pretty))
-    else:
-        stdout = data.get("stdout", "")
-        stderr = data.get("stderr", "")
-
-        if stdout:
-            typer.echo(stdout)
-
-        if stderr:
-            typer.echo(stderr, err=True)
-
-
 @cli.command()
 def test_config():
     """Generate, build, and run Docker resources from a docker config."""
     cfg_list = _utils.load_config()
     data = app.run_config(cfg_list, clean=flags["clean"])
 
+    if not data:
+        typer.echo("No data.")
+        return
+
     for value in data:
-        _print_output(value)
+        value.print(json=flags["json"], pretty=flags["pretty"])
 
 
 @cli.command()
@@ -74,7 +54,11 @@ def test_container(
 
     data = app.test_container(os_name, name, command, clean=flags["clean"])
 
-    _print_output(data)
+    if not data:
+        typer.echo("No data.")
+        return
+
+    data.print(json=flags["json"], pretty=flags["pretty"])
 
 
 @cli.callback()

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import docker
+import rich
 import typer
 from docker.errors import (
     APIError,
@@ -48,6 +49,30 @@ class DockerContainerInfo:
     command: str
     stdout: str
     stderr: str
+
+    def print(self, *, json: bool = False, pretty: bool = False):
+        """Print container output."""
+        data = {
+            "id": self.id,
+            "name": self.name,
+            "command": self.command,
+            "stdout": self.stdout,
+            "stderr": self.stderr,
+        }
+        if json:
+            data_json = _utils.format_json(data)
+            rich.print_json(data_json, highlight=pretty)
+        elif pretty:
+            rich.print(_utils.format_table("container", data, pretty=pretty))
+        else:
+            stdout = data.get("stdout", "")
+            stderr = data.get("stderr", "")
+
+            if stdout:
+                typer.echo(stdout)
+
+            if stderr:
+                typer.echo(stderr, err=True)
 
 
 class DockerBackend:
