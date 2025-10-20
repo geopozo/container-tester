@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -25,6 +26,17 @@ from container_tester import _utils
 if TYPE_CHECKING:
     from docker import DockerClient
     from docker.models.containers import Container as DockerContainer
+
+
+@dataclass
+class DockerImageInfo:
+    """Docker image build data."""
+
+    name: str
+    os_name: str
+    os_base: str
+    os_architecture: str
+    size: str
 
 
 class DockerBackend:
@@ -85,7 +97,7 @@ class DockerBackend:
 
         return file
 
-    def build(self, image_tag: str = "") -> dict[str, Any]:
+    def build(self, image_tag: str = "") -> DockerImageInfo:
         """
         Build docker image and optionally remove a tagged Docker image.
 
@@ -111,15 +123,13 @@ class DockerBackend:
             )
             size = image.attrs.get("Size", "") / (1024 * 1024)
 
-            return {
-                "name": image_tag,
-                "os": {
-                    "name": self.os_name,
-                    "architecture": image.attrs["Architecture"],
-                    "base": image.attrs["Os"],
-                },
-                "size": f"{size:.2f} MB",
-            }
+            return DockerImageInfo(
+                name=image_tag,
+                os_name=self.os_name,
+                os_base=image.attrs["Os"],
+                os_architecture=image.attrs["Architecture"],
+                size=f"{size:.2f} MB",
+            )
         except (BuildError, APIError, TypeError) as e:
             error_msg = getattr(e, "msg", str(e))
             typer.secho(
