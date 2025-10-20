@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import typer
 
-from container_tester.docker_backend import DockerBackend
+from container_tester.docker_backend import DockerBackend, DockerContainerInfo
 
 if TYPE_CHECKING:
     from container_tester._utils import DockerConfig
@@ -19,7 +19,7 @@ def test_container(
     os_commands: list[str] | None = None,
     *,
     clean: bool = False,
-) -> dict[str, Any]:
+) -> DockerContainerInfo:
     """
     Generate, build, and run a container from provided arguments.
 
@@ -41,7 +41,7 @@ def test_container(
 
     if clean:
         docker_test.remove_image(name)
-        docker_test.remove_container(container.get("id", ""))
+        docker_test.remove_container(container.id or "")
         docker_test.remove_dangling()
 
     return container

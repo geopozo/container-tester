@@ -7,7 +7,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import docker
 import typer
@@ -37,6 +37,17 @@ class DockerImageInfo:
     os_base: str
     os_architecture: str
     size: str
+
+
+@dataclass
+class DockerContainerInfo:
+    """Docker container data."""
+
+    id: str | None
+    name: str
+    command: str
+    stdout: str
+    stderr: str
 
 
 class DockerBackend:
@@ -162,7 +173,7 @@ class DockerBackend:
                 err=True,
             )
 
-    def run(self, image_tag: str = "", command: str = "") -> dict[str, Any]:
+    def run(self, image_tag: str = "", command: str = "") -> DockerContainerInfo:
         """
         Run a container from a Docker image with the given command.
 
@@ -195,13 +206,13 @@ class DockerBackend:
             stderr_logs = container.logs(stdout=False, stderr=True).decode()
             config = container.attrs.get("Config", {})
 
-            return {
-                "id": container.id,
-                "name": container_name,
-                "command": config.get("Cmd"),
-                "stdout": stdout_logs.strip(),
-                "stderr": stderr_logs.strip(),
-            }
+            return DockerContainerInfo(
+                id=container.id,
+                name=container_name,
+                command=config.get("Cmd"),
+                stdout=stdout_logs.strip(),
+                stderr=stderr_logs.strip(),
+            )
 
         except (ContainerError, ImageNotFound, APIError) as e:
             typer.secho(
