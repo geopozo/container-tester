@@ -32,15 +32,20 @@ def test_container(
         clean (bool): If True, remove generated artifacts after execution.
 
     """
-    docker_test = DockerBackend(os_name, os_commands)
+    docker_test = DockerBackend(
+        os_name,
+        image_tag=name,
+        command=command,
+        os_commands=os_commands,
+    )
 
     typer.echo(f"{typer.style('Test', fg=typer.colors.GREEN)}: {os_name}")
 
-    docker_test.build(name)
-    container = docker_test.run(name, command)
+    docker_test.build()
+    container = docker_test.run()
 
     if clean:
-        docker_test.remove_image(name)
+        docker_test.remove_image()
         docker_test.remove_container(container.id or "")
         docker_test.remove_dangling()
 

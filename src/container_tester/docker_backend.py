@@ -65,14 +65,11 @@ class DockerContainerInfo:
         elif pretty:
             rich.print(_utils.format_table("container", data, pretty=pretty))
         else:
-            stdout = data.get("stdout", "")
-            stderr = data.get("stderr", "")
+            if self.stdout:
+                typer.echo(self.stdout)
 
-            if stdout:
-                typer.echo(stdout)
-
-            if stderr:
-                typer.echo(stderr, err=True)
+            if self.stderr:
+                typer.echo(self.stderr, err=True)
 
 
 class DockerBackend:
@@ -94,10 +91,19 @@ class DockerBackend:
             )
             sys.exit(1)
 
-    def __init__(self, os_name: str, os_commands: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        os_name: str,
+        *,
+        image_tag: str = "",
+        command: str = "",
+        os_commands: list[str] | None = None,
+    ) -> None:
         """Initialize the Docker backend client."""
         self.client = self._docker_client()
         self.os_name = self._get_os_name(os_name)
+        self.image_tag = image_tag or self._get_tag_name(self.os_name)
+        self.command = command or 'echo "Container is running"'
         self.os_commands = os_commands or []
 
     def _get_os_name(self, os_name: str) -> str:
@@ -133,19 +139,15 @@ class DockerBackend:
 
         return file
 
-    def build(self, image_tag: str = "") -> DockerImageInfo:
+    def build(self) -> DockerImageInfo:
         """
         Build docker image and optionally remove a tagged Docker image.
-
-        Args:
-            image_tag (str): Tag for the resulting Docker image.
 
         Raises:
             SystemExit: If the Docker build fails due to an BuildError,
                 APIError, or TypeError.
 
         """
-        image_tag = image_tag or self._get_tag_name(self.os_name)
         content = self._get_template()
         dockerfile = self._generate_file(content)
 
@@ -153,14 +155,14 @@ class DockerBackend:
             image, _ = self.client.images.build(
                 path=str(_utils.get_cwd()),
                 dockerfile=str(dockerfile),
-                tag=image_tag,
+                tag=self.image_tag,
                 rm=True,  # Necessary to remove intermediate containers.
                 forcerm=True,  # Necessary to remove intermediate containers.
             )
             size = image.attrs.get("Size", "") / (1024 * 1024)
 
             return DockerImageInfo(
-                name=image_tag,
+                name=self.image_tag,
                 os_name=self.os_name,
                 os_base=image.attrs["Os"],
                 os_architecture=image.attrs["Architecture"],
@@ -169,7 +171,7 @@ class DockerBackend:
         except (BuildError, APIError, TypeError) as e:
             error_msg = getattr(e, "msg", str(e))
             typer.secho(
-                f"Failed to build Docker image '{image_tag}'.\n{error_msg}",
+                f"Failed to build Docker image '{self.image_tag}'.\n{error_msg}",
                 fg=typer.colors.RED,
                 err=True,
             )
@@ -198,28 +200,22 @@ class DockerBackend:
                 err=True,
             )
 
-    def run(self, image_tag: str = "", command: str = "") -> DockerContainerInfo:
+    def run(self) -> DockerContainerInfo:
         """
         Run a container from a Docker image with the given command.
-
-        Args:
-            image_tag (str): Tag of the image to run.
-            command (str): Command to execute inside the container.
 
         Raises:
             SystemExit: If the Docker build fails due to an ContainerError,
                 ImageNotFound, or APIError.
 
         """
-        image_tag = image_tag or self._get_tag_name(self.os_name)
-        command = command or 'echo "Container is running"'
         timestamp = int(time.time())
-        container_name = f"container_test_{image_tag}_{timestamp}"
+        container_name = f"container_test_{self.image_tag}_{timestamp}"
 
         try:
             container = self.client.containers.run(
-                image_tag,
-                command=command,
+                self.image_tag,
+                command=self.command,
                 name=container_name,
                 detach=True,
                 stdout=True,
@@ -241,28 +237,23 @@ class DockerBackend:
 
         except (ContainerError, ImageNotFound, APIError) as e:
             typer.secho(
-                f"Failed to run container from image '{image_tag}'.\n{e}",
+                f"Failed to run container from image '{self.image_tag}'.\n{e}",
                 fg=typer.colors.RED,
                 err=True,
             )
             sys.exit(1)
 
-    def remove_image(self, image_tag: str = "") -> None:
+    def remove_image(self) -> None:
         """
         Remove a Docker image by image-tag.
-
-        Args:
-            image_tag (str): Tag used to identify the docker image to remove.
 
         Raises:
             DockerException: If the image removal fails due to an API error or
                 other Docker-related exception.
 
         """
-        image_tag = image_tag or self._get_tag_name(self.os_name)
-
         try:
-            self.client.images.remove(image=image_tag, force=True)
+            self.client.images.remove(image=self.image_tag, force=True)
         except (APIError, DockerException, ImageNotFound) as e:
             raise DockerException(f"Failed to remove Docker image.\n{e}") from e
 
