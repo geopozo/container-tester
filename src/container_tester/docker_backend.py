@@ -238,8 +238,9 @@ class DockerBackend:
                 stdout=True,
                 stderr=True,
             )
-            container.wait()
+            result = container.wait()
 
+            exit_code = result.get("StatusCode")
             stdout_logs = container.logs(stdout=True, stderr=False).decode()
             stderr_logs = container.logs(stdout=False, stderr=True).decode()
             config = container.attrs.get("Config", {})
@@ -249,7 +250,7 @@ class DockerBackend:
                 name=container_name,
                 command=config.get("Cmd"),
                 stdout=stdout_logs.strip(),
-                stderr=stderr_logs.strip(),
+                stderr=stderr_logs.strip() if exit_code else "",
             )
 
         except (ContainerError, ImageNotFound, APIError) as e:
