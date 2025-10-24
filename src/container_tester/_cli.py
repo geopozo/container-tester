@@ -1,4 +1,5 @@
 import re
+import shutil
 from typing import Annotated
 
 import typer
@@ -14,6 +15,7 @@ def test_config():
     """Generate, build, and run Docker resources from a docker config."""
     cfg_list = _utils.load_config()
     data = app.run_config(cfg_list, clean=flags["clean"])
+    width = shutil.get_terminal_size().columns
 
     if not data:
         typer.echo("No data.")
@@ -21,6 +23,7 @@ def test_config():
 
     for value in data:
         value.print(json=flags["json"], pretty=flags["pretty"])
+        typer.echo("-" * width)
 
 
 @cli.command()
