@@ -60,23 +60,23 @@ Usage: contest [OPTIONS] [OS_NAME]
 
 Generate, build, and run Docker resources from a base image or config file.
 
-╭─ Options ─────────────────────────────────────────────────────────────────────╮
-│ --json    --no-json          Show output in json format                       │
-│                              (use --json to enable) [default: no-json]        │
-│ --pretty  --no-pretty        Show output in pretty format                     │
-│                              (use --pretty to enable) [default: no-pretty]    │
-│ --clean   --no-clean         Clean Docker resources after run                 │
-│                              (use --clean to enable) [default: no-clean]      │
-│ --install-completion         Install completion for the current shell.        │
-│ --show-completion            Show completion for the current shell, to copy   │
-│                              it or customize the installation.                │
-│ --help                       Show this message and exit.                      │
-╰───────────────────────────────────────────────────────────────────────────────╯
++- Options ---------------------------------------------------------------------+
+| --json    --no-json          Show output in json format                       |
+|                              (use --json to enable) [default: no-json]        |
+| --pretty  --no-pretty        Show output in pretty format                     |
+|                              (use --pretty to enable) [default: no-pretty]    |
+| --clean   --no-clean         Clean Docker resources after run                 |
+|                              (use --clean to enable) [default: no-clean]      |
+| --install-completion         Install completion for the current shell.        |
+| --show-completion            Show completion for the current shell, to copy   |
+|                              it or customize the installation.                |
+| --help                       Show this message and exit.                      |
++-------------------------------------------------------------------------------+
 
-╭─ Commands ────────────────────────────────────────────────────────────────────╮
-│ test-config      Generate, build, and run Docker resources from a docker      |
-│ test-container   Generate, build, and run Docker resources from a base image. |
-╰───────────────────────────────────────────────────────────────────────────────╯
++- Commands --------------------------------------------------------------------+
+| test-config      Generate, build, and run Docker resources from a docker      |
+| test-container   Generate, build, and run Docker resources from a base image. |
++-------------------------------------------------------------------------------+
 ```
 
 </div>
