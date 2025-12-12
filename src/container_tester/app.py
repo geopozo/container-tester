@@ -32,14 +32,14 @@ def test_container(
         clean (bool): If True, remove generated artifacts after execution.
 
     """
+    typer.echo(f"{typer.style('Test', fg=typer.colors.GREEN)}: {os_name}")
+
     docker_test = DockerBackend(
         os_name,
         image_tag=name,
         command=command,
         os_commands=os_commands,
     )
-
-    typer.echo(f"{typer.style('Test', fg=typer.colors.GREEN)}: {os_name}")
 
     docker_test.build()
     container = docker_test.run()
