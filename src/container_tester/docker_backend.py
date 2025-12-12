@@ -239,6 +239,10 @@ class DockerBackend:
         """
         Run a container from a Docker image with the given command.
 
+        Returns:
+            DockerContainerInfo: Information about the executed container.
+                including its id, name, command, stdout, and stderr.
+
         Raises:
             SystemExit: If the Docker build fails due to an ContainerError,
                 ImageNotFound, or APIError.
