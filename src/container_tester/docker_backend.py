@@ -74,8 +74,15 @@ class DockerContainerInfo:
     stdout: str
     stderr: str
 
-    def print(self, *, json: bool = False, pretty: bool = False):
-        """Print container output."""
+    def print(self, *, json: bool = False, pretty: bool = False) -> None:
+        """
+        Print container output.
+
+        Args:
+            json (bool): Whether to output the data in JSON format.
+            pretty (bool): Whether to pretty-print the output.
+
+        """
         data = {
             "id": self.id,
             "name": self.name,
