@@ -39,8 +39,15 @@ class DockerImageInfo:
     os_architecture: str
     size: str
 
-    def print(self, *, json: bool = False, pretty: bool = False):
-        """Print image output."""
+    def print(self, *, json: bool = False, pretty: bool = False) -> None:
+        """
+        Print image output.
+
+        Args:
+            json (bool): Whether to output the data in JSON format.
+            pretty (bool): Whether to pretty-print the output.
+
+        """
         data = {
             "name": self.name,
             "os_name": self.os_name,
