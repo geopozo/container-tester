@@ -3,8 +3,9 @@
 <h1 align="center">
 	<img
         height="250"
+		width="250"
 		alt="container_small"
-		src="./docs/media/logo.png">
+		src="docs/media/logo.png">
 </h1>
 
 ## Overview
