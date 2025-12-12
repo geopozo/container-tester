@@ -174,6 +174,10 @@ class DockerBackend:
         """
         Build docker image and optionally remove a tagged Docker image.
 
+        Returns:
+            DockerImageInfo: Information about the built Docker image,
+            including its name, operating system, architecture, and size.
+
         Raises:
             SystemExit: If the Docker build fails due to an BuildError,
                 APIError, or TypeError.
