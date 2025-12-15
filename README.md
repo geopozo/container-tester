@@ -154,6 +154,9 @@ uv run contest test-config
 
 </div>
 
+Output examples:
+[docs/outputs.md](docs/outputs.md)
+
 ## License
 
 This project is licensed under the terms of the MIT license.
