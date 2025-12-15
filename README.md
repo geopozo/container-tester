@@ -26,7 +26,7 @@ You can use Container-Tester in two ways:
 <div class="termy">
 
 ```console
-uv add container‑tester
+uv add container-tester
 ```
 
 </div>
@@ -109,7 +109,7 @@ By default, Container‑Tester comes with a handful of profiles covering common 
 
 | image_tag     | os_name                 |
 | ------------- | ----------------------- |
-| py312_trixie  | python:3.12‑slim‑trixie |
+| py312_trixie  | python:3.12-slim-trixie |
 | ubuntu_latest | ubuntu:latest           |
 | alpine_latest | alpine:latest           |
 
