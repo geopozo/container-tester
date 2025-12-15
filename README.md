@@ -88,7 +88,7 @@ Here is a quick example that runs a simple command across all default profiles:
 <div class="termy">
 
 ```console
-uv run contest --command "python --version"
+uv run contest test-config
 ```
 
 </div>
@@ -98,7 +98,7 @@ To test only on the Ubuntu image, you can specify its base image directly and us
 <div class="termy">
 
 ```console
-uv run contest ubuntu:latest --command "echo Hello, world!"
+uv run contest test-container ubuntu:latest --command "echo Hello, world!"
 ```
 
 </div>
@@ -148,7 +148,7 @@ After creating your `docker-config.toml` file, launch your custom Docker setup b
 <div class="termy">
 
 ```console
-uv run contest
+uv run contest test-config
 ```
 
 </div>
