@@ -10,6 +10,11 @@ nav:
         "src": "../README.md",
         "replace": {"src=\"docs/": "src=\""}
       }
+  - Outputs: >-
+      {
+        "dest": "outputs.md",
+        "src": "outputs.md"
+      }
   - Reference: >-
       {
         "api": "container_tester"
