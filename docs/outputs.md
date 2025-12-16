@@ -2,15 +2,15 @@
 
 ## Test container
 
+With pretty json:
+
 ```bash
 uv run contest --json --pretty test-container ubuntu --command "echo Hello, world"
 ```
 
-With pretty json:
-
 ```json
 {
-  "id": "8ccd21a13fd4dd9bb7a4785305aa130ba705484efe4652bbeae5afc7a22d3326",
+  "id": "12345",
   "name": "container_test_ubuntu_latest_1765840163",
   "command": ["echo", "Hello,", "world"],
   "stdout": "Hello, world",
@@ -24,17 +24,59 @@ With pretty:
 uv run contest --pretty test-container ubuntu --command "echo Hello, world"
 ```
 
-<pre style="font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><code style="font-family:inherit"><span style="font-style: italic">                                  container                                   </span>
-┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃<span style="font-weight: bold"> key     </span>┃<span style="font-weight: bold"> value                                                            </span>┃
-┡━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│<span style="color: #008080; text-decoration-color: #008080"> id      </span>│<span style="color: #800080; text-decoration-color: #800080"> af2557638d7aca686f94a4a8a221ded38fc4d2baa1bbd3fbc179afb75b31ffcd </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> name    </span>│<span style="color: #800080; text-decoration-color: #800080"> container_test_ubuntu_latest_1765839880                          </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> command </span>│<span style="color: #800080; text-decoration-color: #800080"> [&#x27;echo&#x27;, &#x27;Hello,&#x27;, &#x27;world&#x27;]                                      </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> stdout  </span>│<span style="color: #800080; text-decoration-color: #800080"> Hello, world                                                     </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> stderr  </span>│<span style="color: #800080; text-decoration-color: #800080">                                                                  </span>│
-└─────────┴──────────────────────────────────────────────────────────────────┘
-</code></pre>
+<div style="font-family:Menlo,'DejaVu Sans Mono',Consolas,'Courier New',monospace;font-size:13px;line-height:1.45;max-width:980px;color:inherit">
+  <div style="font-weight:700;margin:0 0 8px 0;text-align:center">container</div>
+  <table style="width:100%;border-collapse:collapse;border:1px solid currentColor">
+    <thead>
+      <tr>
+        <th style="text-align:left;padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;font-weight:700">key</th>
+        <th style="text-align:left;padding:8px 10px;border-bottom:1px solid currentColor;font-weight:700">value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top">
+          <span style="color:#2aa198">id</span>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top;word-break:break-all">
+          <span style="color:#c792ea">af2557638d7aca686f94a4a8a221ded38fc4d2baa1bbd3fbc179afb75b31ffcd</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top">
+          <span style="color:#2aa198">name</span>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top">
+          <span style="color:#c792ea">container_test_ubuntu_latest_1765839880</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top">
+          <span style="color:#2aa198">command</span>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top">
+          <span style="color:#c792ea">['echo', 'Hello,', 'world']</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top">
+          <span style="color:#2aa198">stdout</span>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top">
+          <span style="color:#c792ea">Hello, world</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-right:1px solid currentColor;vertical-align:top">
+          <span style="color:#2aa198">stderr</span>
+        </td>
+        <td style="padding:8px 10px;vertical-align:top">
+          <span style="color:#c792ea"></span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Test config
 
@@ -47,14 +89,14 @@ uv run contest --json --pretty test-config
 ```json
 [
   {
-    "id": "1b17ae475cf05af69dca70e930f7c90c2ac5cb57a0af972a36e7e535ecee947b",
+    "id": "12345",
     "name": "container_test_alpine_latest_1765840328",
     "command": ["echo", "Hello,", "world"],
     "stdout": "Hello, world",
     "stderr": ""
   },
   {
-    "id": "f98ed41100035f349f9897fa2ce3a14f8dee4433cc0b79b8ea09841fde216fd7",
+    "id": "12346",
     "name": "container_test_ubuntu_latest_1765840603",
     "command": ["echo", "Hello,", "world"],
     "stdout": "Hello, world",
@@ -69,25 +111,70 @@ With pretty:
 uv run contest --pretty test-config
 ```
 
-<pre style="font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><code style="font-family:inherit"><span style="font-style: italic">                                  container                                   </span>
-┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃<span style="font-weight: bold"> key     </span>┃<span style="font-weight: bold"> value                                                            </span>┃
-┡━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│<span style="color: #008080; text-decoration-color: #008080"> id      </span>│<span style="color: #800080; text-decoration-color: #800080"> 10a3310ae05dad5ddd9c6cfedba1313929f1f924e0ad1c7b1597ca504b80c46b </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> name    </span>│<span style="color: #800080; text-decoration-color: #800080"> container_test_alpine_latest_1765840443                          </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> command </span>│<span style="color: #800080; text-decoration-color: #800080"> [&#x27;echo&#x27;, &#x27;Hello,&#x27;, &#x27;world&#x27;]                                      </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> stdout  </span>│<span style="color: #800080; text-decoration-color: #800080"> Hello, world                                                     </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> stderr  </span>│<span style="color: #800080; text-decoration-color: #800080">                                                                  </span>│
-└─────────┴──────────────────────────────────────────────────────────────────┘
-</code>
-<code style="font-family:inherit"><span style="font-style: italic">                                  container                                   </span>
-┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃<span style="font-weight: bold"> key     </span>┃<span style="font-weight: bold"> value                                                            </span>┃
-┡━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│<span style="color: #008080; text-decoration-color: #008080"> id      </span>│<span style="color: #800080; text-decoration-color: #800080"> 67fd34157c99f7037c2acf68b9af3c9272bb184bc83b8b6d26730cd9cc87e950 </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> name    </span>│<span style="color: #800080; text-decoration-color: #800080"> container_test_ubuntu_latest_1765840570                          </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> command </span>│<span style="color: #800080; text-decoration-color: #800080"> [&#x27;echo&#x27;, &#x27;Hello,&#x27;, &#x27;world&#x27;]                                      </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> stdout  </span>│<span style="color: #800080; text-decoration-color: #800080"> Hello, world                                                     </span>│
-│<span style="color: #008080; text-decoration-color: #008080"> stderr  </span>│<span style="color: #800080; text-decoration-color: #800080">                                                                  </span>│
-└─────────┴──────────────────────────────────────────────────────────────────┘
-</code></pre>
+<div style="font-family:Menlo,'DejaVu Sans Mono',Consolas,'Courier New',monospace;font-size:13px;line-height:1.45;max-width:980px;color:inherit">
+  <div style="font-weight:700;margin:0 0 8px 0;text-align:center">container</div>
+  <table style="width:100%;border-collapse:collapse;border:1px solid currentColor">
+    <thead>
+      <tr>
+        <th style="text-align:left;padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;font-weight:700">key</th>
+        <th style="text-align:left;padding:8px 10px;border-bottom:1px solid currentColor;font-weight:700">value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">id</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top;word-break:break-all"><span style="color:#c792ea">10a3310ae05dad5ddd9c6cfedba1313929f1f924e0ad1c7b1597ca504b80c46b</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">name</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top"><span style="color:#c792ea">container_test_alpine_latest_1765840443</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">command</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top"><span style="color:#c792ea">['echo', 'Hello,', 'world']</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">stdout</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top"><span style="color:#c792ea">Hello, world</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">stderr</span></td>
+        <td style="padding:8px 10px;vertical-align:top"><span style="color:#c792ea"></span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="height:14px"></div>
+
+  <div style="font-weight:700;margin:0 0 8px 0;text-align:center">container</div>
+  <table style="width:100%;border-collapse:collapse;border:1px solid currentColor">
+    <thead>
+      <tr>
+        <th style="text-align:left;padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;font-weight:700">key</th>
+        <th style="text-align:left;padding:8px 10px;border-bottom:1px solid currentColor;font-weight:700">value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">id</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top;word-break:break-all"><span style="color:#c792ea">67fd34157c99f7037c2acf68b9af3c9272bb184bc83b8b6d26730cd9cc87e950</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">name</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top"><span style="color:#c792ea">container_test_ubuntu_latest_1765840570</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">command</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top"><span style="color:#c792ea">['echo', 'Hello,', 'world']</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">stdout</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid currentColor;vertical-align:top"><span style="color:#c792ea">Hello, world</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-right:1px solid currentColor;vertical-align:top"><span style="color:#2aa198">stderr</span></td>
+        <td style="padding:8px 10px;vertical-align:top"><span style="color:#c792ea"></span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
