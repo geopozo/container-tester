@@ -10,10 +10,10 @@ nav:
         "src": "../README.md",
         "replace": {"src=\"docs/": "src=\""}
       }
-  - Outputs: >-
+  - Examples: >-
       {
-        "dest": "outputs.md",
-        "src": "outputs.md"
+        "dest": "examples.md",
+        "src": "examples.md"
       }
   - Reference: >-
       {
