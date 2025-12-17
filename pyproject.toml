@@ -62,4 +62,9 @@ ignore = [
 ]
 
 [tool.pyright]
-include = ["src/container_tester"]
+venvPath = "."
+venv = ".venv"
+include = ["src", "tests"]
+
+[tool.rumdl]
+disable = ["MD046"]
