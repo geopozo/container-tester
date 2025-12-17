@@ -33,17 +33,9 @@ You can use Container-Tester in two ways:
 
    ```bash
    uv add container-tester
-   ```
-
-   After installation, verify that it's working by running:
-
-   ```bash
    uv run contest --help
-   ```
 
-2. From source using uvx (recommended for latest version):
-
-   ```bash
+   # or if you don't want to install:
    uvx --from container-tester contest --help
    ```
 
@@ -93,7 +85,7 @@ uv run contest test-container ubuntu:latest --command "echo Hello, world!"
 By default, Container-Tester comes with a handful of profiles covering common
 Python, Debian/Ubuntu and Alpine base images. Each profile defines an
 `image_tag` (used as the resulting image name) and the corresponding `os_name`.
-A few of them are shown below-see `src/container_tester/docker-config.toml` for
+A few of them are shown below- see `src/container_tester/docker-config.toml` for
 the full list:
 
 | image_tag     | os_name                 |
