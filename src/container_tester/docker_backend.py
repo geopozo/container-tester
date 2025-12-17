@@ -39,8 +39,15 @@ class DockerImageInfo:
     os_architecture: str
     size: str
 
-    def print(self, *, json: bool = False, pretty: bool = False):
-        """Print image output."""
+    def print(self, *, json: bool = False, pretty: bool = False) -> None:
+        """
+        Print image output.
+
+        Args:
+            json (bool): Whether to output the data in JSON format.
+            pretty (bool): Whether to pretty-print the output.
+
+        """
         data = {
             "name": self.name,
             "os_name": self.os_name,
@@ -67,8 +74,15 @@ class DockerContainerInfo:
     stdout: str
     stderr: str
 
-    def print(self, *, json: bool = False, pretty: bool = False):
-        """Print container output."""
+    def print(self, *, json: bool = False, pretty: bool = False) -> None:
+        """
+        Print container output.
+
+        Args:
+            json (bool): Whether to output the data in JSON format.
+            pretty (bool): Whether to pretty-print the output.
+
+        """
         data = {
             "id": self.id,
             "name": self.name,
@@ -160,6 +174,10 @@ class DockerBackend:
         """
         Build docker image and optionally remove a tagged Docker image.
 
+        Returns:
+            DockerImageInfo: Information about the built Docker image,
+            including its name, operating system, architecture, and size.
+
         Raises:
             SystemExit: If the Docker build fails due to an BuildError,
                 APIError, or TypeError.
@@ -220,6 +238,10 @@ class DockerBackend:
     def run(self) -> DockerContainerInfo:
         """
         Run a container from a Docker image with the given command.
+
+        Returns:
+            DockerContainerInfo: Information about the executed container.
+                including its id, name, command, stdout, and stderr.
 
         Raises:
             SystemExit: If the Docker build fails due to an ContainerError,

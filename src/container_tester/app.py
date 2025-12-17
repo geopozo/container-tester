@@ -32,14 +32,14 @@ def test_container(
         clean (bool): If True, remove generated artifacts after execution.
 
     """
+    typer.echo(f"{typer.style('Test', fg=typer.colors.GREEN)}: {os_name}")
+
     docker_test = DockerBackend(
         os_name,
         image_tag=name,
         command=command,
         os_commands=os_commands,
     )
-
-    typer.echo(f"{typer.style('Test', fg=typer.colors.GREEN)}: {os_name}")
 
     docker_test.build()
     container = docker_test.run()
@@ -67,23 +67,17 @@ def run_config(
             after execution.
 
     """
-    info_list = []
-
     typer.echo(f"Container Tests: {len(config_list)}")
 
-    for tag, cfg in config_list.items():
-        os_name = cfg["os_name"]
-        command = cfg["command"]
-        os_commands = cfg["os_commands"]
-
-        docker_info = test_container(
-            os_name,
+    info_list = [
+        test_container(
+            cfg["os_name"],
             tag,
-            command,
-            os_commands,
+            cfg["command"],
+            cfg["os_commands"],
             clean=clean,
         )
-
-        info_list.append(docker_info)
+        for tag, cfg in config_list.items()
+    ]
 
     return info_list

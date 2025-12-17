@@ -33,7 +33,7 @@ def test_container(
         typer.Argument(
             help="Base Docker image to initialize from (e.g., 'ubuntu:20.04').",
         ),
-    ] = "",
+    ],
     name: Annotated[
         str,
         typer.Option(help="Custom name for the generated docker image"),
