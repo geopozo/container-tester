@@ -1,2 +1,5 @@
+v1.0.0rc1
+- Change image link
+
 v1.0.0rc0
 - Implemented basic functionality
