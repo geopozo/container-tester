@@ -7,7 +7,7 @@
       height="250"
       width="250"
       alt="container_small"
-      src="docs/media/logo.png">
+      src="https://raw.githubusercontent.com/geopozo/container-tester/main/docs/media/logo.png">
 </div>
 
 ## Overview
